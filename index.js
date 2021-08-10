@@ -23,6 +23,7 @@ const crawler  = async () => {
       코스피, 코스닥을 호출 했는데 코스피만오네 ...
     */
     //const response = await axios.get("https://kind.krx.co.kr/corpgeneral/corpList.do?method=download&pageIndex=1&currentPageSize=5000&comAbbrv=&beginIndex=&orderMode=3&orderStat=D&isurCd=&repIsuSrtCd=&searchCodeType=&marketType=stockMkt&searchType=13&industry=&fiscalYearEnd=all&comAbbrvTmp=&location=all");
+    const eventKind = "kospi";
     const response = await axios.get("https://kind.krx.co.kr/corpgeneral/corpList.do?method=download&pageIndex=1&currentPageSize=5000&comAbbrv=&beginIndex=&orderMode=3&orderStat=D&isurCd=&repIsuSrtCd=&searchCodeType=&marketType=stockMkt&searchType=13&industry=&fiscalYearEnd=all&comAbbrvTmp=&location=all",{responseEncoding : 'binary', responseType : 'arraybuffer'});
     if (response.status === 200) {
       
@@ -43,23 +44,20 @@ const crawler  = async () => {
         const tableRow = { company, comNum, comkind };
         scrapedData.push(tableRow);
       });
-      
+
+      /*DB에 입력 해 보자*/
+      var connection = mysql.createConnection(conn); // DB 커넥션 생성
+      connection.connect();   // DB 접속
+
       /*쿼리 생성 한다.*/
       var testQuery = "";
       for(var key in scrapedData) {
 
         //console.log(scrapedData[key].company);
-        testQuery = `INSERT INTO event_info (event_info.event_code, event_info.company_name, event_info.reg_dtm, event_info.regr_id, event_info.mod_dtm, event_info.modr_id)
-        VALUES('${scrapedData[key].comNum}','${scrapedData[key].company}', NOW(),'LSH',NOW(), 'LSH');`;
+        testQuery += `INSERT INTO event_info (event_kind, event_code, company_name, reg_dtm, regr_id, mod_dtm, modr_id) VALUES('${eventKind}','${scrapedData[key].comNum}','${scrapedData[key].company}', NOW(),'LSH',NOW(), 'LSH');`;
 
-        console.log(testQuery);
-
-
+        
       }
-
-      /*DB에 입력 해 보자*/
-      var connection = mysql.createConnection(conn); // DB 커넥션 생성
-      connection.connect();   // DB 접속
 
       connection.query(testQuery, function (err, results, fields) { // testQuery 실행
         if (err) {
@@ -67,8 +65,9 @@ const crawler  = async () => {
         }
         console.log(results);
       });
-
-
+      console.log("lsh : 입력 종료");
+      
+      
     }
 
   
