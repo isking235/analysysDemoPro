@@ -63,12 +63,13 @@ const crawler  = async (eventKind) => {
 
         //console.log(scrapedData[key].company);
         testQuery = `INSERT INTO event_info (event_kind, event_code, company_name, reg_dtm, regr_id, mod_dtm, modr_id) VALUES('${eventKind}','${scrapedData[key].comNum}','${scrapedData[key].company}', NOW(),'LSH',NOW(), 'LSH');`;
-		connection.query(testQuery, function (err, results, fields) { // testQuery 실행
-			if (err) {
-				console.log(err);
-			}
-			console.log(results);
-		  });
+        connection.query(testQuery, function (err, results, fields) { // testQuery 실행
+          if (err) {
+            console.log(err);
+          }
+          console.log(results);
+          
+        });
 
         
       }
