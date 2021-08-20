@@ -44,15 +44,21 @@ const opinionLoad = async(eventCode) => {
         }
 
         console.log("종목:"+eventCode)+"완료";
-        
-
+        connection.end();
 
     }
     
 };
 
-function sleep(t){
-    return new Promise(resolve=>setTimeout(resolve,t));
+const runFunction = (resolve,eventCode,t) => {
+    console.log("sleep : "+(t/1000)+"초_eventCode : "+eventCode);
+    opinionLoad(eventCode); //종목코드를 보내준다.
+    return resolve;
+}
+
+function sleep(eventCode, t){
+    
+    return new Promise((resolve)=>setTimeout(runFunction,t,resolve,eventCode,t)); //settimeout(함수명, 시간(인터벌),...(함수의 파라미터) ) https://ko.javascript.info/settimeout-setinterval
 }
 
 const crawlerEventOpinion  = () => {
@@ -62,28 +68,29 @@ const crawlerEventOpinion  = () => {
     connection.connect();   // DB 접속
 
     /*쿼리 생성 한다.*/
-    var testQuery = "SELECT event_code, company_name FROM event_info WHERE event_code in ('009420','002390','011070','006360');";
+    //var testQuery = "SELECT event_code, company_name FROM event_info WHERE event_code in ('270870','067990','033500','141000');";
+    var testQuery = "SELECT event_code, company_name FROM event_info ORDER BY event_code;";
     let intever = 2000;
     let ms = 0;
     let idx = 0;
+    let code = 0;
 
     connection.query(testQuery, function(err, results, field){
-		
+        if (err) {
+            console.log(err);
+        }
+
         for(key in results) {
-            opinionLoad(results[key].event_code); //종목코드를 보내준다.
             ms = (idx+1)*intever;
+            
             (async function(){
                 //메인 코드
-                console.log("시작! intever:"+ms);
-                await sleep(ms);                
-                console.log(ms+"초 뒤에 찍힘");
-                
-              })();
-
-              idx++;
-               
-
+                await sleep(results[key].event_code, ms);
+            })();
+            idx++;
         }
+
+
     });
 
 };
