@@ -1,9 +1,4 @@
 /*
-history
-2022-04-16 이상호 [CSR001]_종목별 최신을 읽어와 이후 종목 의견만 받아온다.
- */
-
-/*
 종목 정보 테이블을 읽어서 목표가및 의견 정보를 입력하자
  */
 const axios = require('axios');
@@ -19,58 +14,18 @@ const conn = {  // mysql 접속 설정
     database: process.env.DB_NAME,
 };
 
-/*
-2022-04-16 날짜를 datetime 포멧으로 가져온다.
-**/
-function datetimeFormat(date) {
-    let month = date.getMonth() + 1;
-    let day = date.getDate();
-    let hour = date.getHours();
-    let minute = date.getMinutes();
-    let second = date.getSeconds();
+const stockPriceLoad = async(eventCode) => {
 
-    month = month >= 10 ? month : '0' + month;
-    day = day >= 10 ? day : '0' + day;
-    hour = hour >= 10 ? hour : '0' + hour;
-    minute = minute >= 10 ? minute : '0' + minute;
-    second = second >= 10 ? second : '0' + second;
+    let stockPriceUrl = `http://m.comp.fnguide.com/m2/data/json/chart/01_02/chart_A${eventCode}.json`;
+    console.log("stockPriceLoad.stockPriceUrl :"+ stockPriceUrl);
 
-    return date.getFullYear() + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
-}
-
-/*
-2022-04-16 날짜를 date 포멧으로 가져온다.
-**/
-function dateFormat(date) {
-    let month = date.getMonth() + 1;
-    let day = date.getDate();
-    let hour = date.getHours();
-    let minute = date.getMinutes();
-    let second = date.getSeconds();
-
-    month = month >= 10 ? month : '0' + month;
-    day = day >= 10 ? day : '0' + day;
-    hour = hour >= 10 ? hour : '0' + hour;
-    minute = minute >= 10 ? minute : '0' + minute;
-    second = second >= 10 ? second : '0' + second;
-
-    return date.getFullYear() + '/' + month + '/' + day;
-}
-
-const opinionLoad = async(eventCode) => {
-
-    let opinionUrl = `http://m.comp.fnguide.com/m2/data/json/chart/01_02/chart_A${eventCode}.json`;
-    console.log("opinionLoad.opinionUrl :"+ opinionUrl);
-
-
-
-    const response = await axios.get(opinionUrl);
+    const response = await axios.get(stockPriceUrl);
 
     if (response.status === 200) {
 
-        const opnions = JSON.stringify(response.data, null, 2); //API를 json으로 받아 온다.
-        //console.log(opnions);
-        const obj = JSON.parse(opnions); //json을 객체화
+        const stockPrice = JSON.stringify(response.data, null, 2); //API를 json으로 받아 온다.
+        //console.log(stockPrice);
+        const obj = JSON.parse(stockPrice); //json을 객체화
         //console.log(obj.CHART);
         const list = obj.CHART;
 
@@ -114,16 +69,34 @@ const opinionLoad = async(eventCode) => {
 
 const runFunction = (resolve,eventCode,t) => {
     console.log("sleep : "+(t/1000)+"초_eventCode : "+eventCode);
-    opinionLoad(eventCode); //종목코드를 보내준다.
+    stockPriceLoadTest(eventCode); //종목코드를 보내준다.
     return resolve;
 }
 
 function sleep(eventCode, t){
-    
+
     return new Promise((resolve)=>setTimeout(runFunction,t,resolve,eventCode,t)); //settimeout(함수명, 시간(인터벌),...(함수의 파라미터) ) https://ko.javascript.info/settimeout-setinterval
 }
 
-const crawlerEventOpinion  = () => {
+const stockPriceLoadTest = async(eventCode) => {
+
+    let stockPriceUrl = `https://api.finance.naver.com/siseJson.naver?symbol=${eventCode}&requestType=1&startTime=20220401&endTime=20220417&timeframe=day`;
+    console.log("stockPriceLoad.stockPriceUrl :"+ stockPriceUrl);
+
+    const response = await axios.get(stockPriceUrl);
+
+    if (response.status === 200) {
+
+        const stockPrice = JSON.stringify(response.data, null, 2); //API를 json으로 받아 온다.
+        //console.log(stockPrice);
+        const obj = JSON.parse(stockPrice); //json을 객체화
+        console.log(obj);
+        //console.log(obj.CHART);
+    }
+
+};
+
+const crawlerStockPrice  = () => {
     console.log("crawlerEventOpinion start");
     /*DB에 입력 해 보자*/
     let connection = mysql.createConnection(conn); // DB 커넥션 생성
@@ -131,30 +104,29 @@ const crawlerEventOpinion  = () => {
 
     /*쿼리 생성 한다.*/
     //let testQuery = "SELECT event_code, company_name FROM event_info WHERE event_code in ('270870','067990','033500','141000');";
-    let testQuery = "SELECT event_code, company_name FROM event_info ORDER BY event_code";
+    let testQuery = "SELECT event_code, company_name FROM event_info WHERE event_code in ('005930') ORDER BY event_code";
     let intever = 2000;
     let ms = 0;
     let idx = 0;
-    let code = 0;
 
     connection.query(testQuery, function(err, results, field){
+
         if (err) {
             console.log(err);
         }
 
         for(key in results) {
             ms = (idx+1)*intever;
-            
+
             (async function(){
                 //메인 코드
                 await sleep(results[key].event_code, ms);
             })();
             idx++;
         }
-
-
     });
 
 };
-crawlerEventOpinion();
-console.log("end");
+
+crawlerStockPrice();
+console.log("crawlerStockPrice end");
