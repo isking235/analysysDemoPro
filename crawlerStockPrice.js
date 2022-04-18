@@ -88,8 +88,9 @@ const stockPriceLoadTest = async(eventCode) => {
     if (response.status === 200) {
 
         const stockPrice = JSON.stringify(response.data, null, 2); //API를 json으로 받아 온다.
-        //console.log(stockPrice);
-        const obj = JSON.parse(stockPrice); //json을 객체화
+		
+        console.log(stockPrice);
+        const obj = JSON.parse('{'+stockPrice+'}'); //json을 객체화
         console.log(obj);
         //console.log(obj.CHART);
     }
