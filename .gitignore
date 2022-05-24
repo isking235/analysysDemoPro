@@ -1,5 +1,9 @@
 # dependencies
 /node_modules
-
+/.idea
 # misc
 .env
+
+#DB 스크립트
+/db backup
+/SQL 모음

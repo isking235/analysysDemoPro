@@ -13,7 +13,7 @@ const crawlerTest_json_test  = async() => {
 	//strBacktic.forEach(element => console.log(element[0]+","+element[1]));
 	
 	/*2. 시세를 웹으로 호출하여 순회 해 보자*/	
-	let stockPriceUrl = `https://api.finance.naver.com/siseJson.naver?symbol=005930&requestType=1&startTime=20220401&endTime=20220417&timeframe=day`;
+	let stockPriceUrl =
     console.log("crawlerTest_json_test start.stockPriceUrl :"+ stockPriceUrl);
 
     const response = await axios.get(stockPriceUrl);
