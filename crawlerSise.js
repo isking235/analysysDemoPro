@@ -73,12 +73,26 @@ const opinionLoad = async(eventCode) => {
         let sise = eval(response.data);
         //console.log("sise[0]:"+sise[0]);
         //sise.forEach(element => console.log(element[0]+","+element[1]));
-        let values = "";
-
-        for(let i = 1 ; i < sise.length ; i++) {
+		
+		//sis를 순회한다.
+		/* forEach
+		sise.forEach((v,i)=> {
+			console.log(i+'_'+v+'_'+v[0]);
+		});*/
+		
+		/* for
+		for(let i = 0 ; i < sise.length ; i++) {
             console.log(sise[i]);
-        }
-
+        }*/
+		
+		//날짜 항목을 가진 행을 삭제 
+		let values = sise.filter((v,i)=> {
+			//console.log(i+'_'+v+'_'+v[0]);
+			return v[0] !== '날짜';
+		});
+		
+		console.log(values);
+		
         let insertQuery = '';
 
     }//if
