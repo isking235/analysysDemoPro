@@ -8,6 +8,10 @@ history
  */
 const axios = require('axios');
 const mysql = require('mysql');  // mysql 모듈 로드
+const moment = require('moment');
+const _ = require('lodash');
+
+
 require('dotenv').config();
 
 
@@ -62,97 +66,121 @@ const opinionLoad = async(eventCode) => {
     let today = new Date();
     let todayString  = dateFormat(today).replace('/','');
 
-
-    let siseUrl = `https://api.finance.naver.com/siseJson.naver?symbol=${eventCode}&requestType=1&startTime=20220511&endTime=${todayString}&timeframe=day`;
-    const response = await axios.get(siseUrl);
+    /*1.시작일을 뽑자
+       - DB에 저장된 최대날짜를 조회
+       - 최대날짜가 비었으면 19900103
+       - 최대날짜가 있으면 1일을 더하자
+     */
 
     let connection = mysql.createConnection(conn); // DB 커넥션 생성
     connection.connect();   // DB 접속
 
-    if (response.status === 200) {
-        let sise = eval(response.data);
-        //console.log("sise[0]:"+sise[0]);
-        //sise.forEach(element => console.log(element[0]+","+element[1]));
-		
-		//sis를 순회한다.
-		/* forEach
-		sise.forEach((v,i)=> {
-			console.log(i+'_'+v+'_'+v[0]);
-		});*/
-		
-		/* for
-		for(let i = 0 ; i < sise.length ; i++) {
-            console.log(sise[i]);
-        }*/
-		
-		//날짜 항목을 가진 행을 삭제 
-		let values = sise.filter((v,i)=> {
-			//console.log(i+'_'+v+'_'+v[0]);
-			return v[0] !== '날짜';
-		});
-		
-		console.log(values);
-		
-        let insertQuery = '';
+    let startTime;
+    let maxStockDateQuery = `SELECT MAX(A.stock_date) AS max_stock_date FROM stock_price_information A WHERE A.event_code = '${eventCode}'`;
 
-    }//if
+    connection.query(maxStockDateQuery, async  function (err, results, field) {
+        if (err) {
+            console.log(err);
+        }
+        //console.log("results[key].max_stock_date:"+results[key].max_stock_date);
+        //console.log("_.isEmpty(results[key].max_stock_date) => "+_.isEmpty(results[key].max_stock_date));
+        //console.log("_.isDate(results[key].max_stock_date) => "+_.isDate(results[key].max_stock_date));
 
-    console.log("종목 :"+eventCode+" 시세조회 완료");
-    connection.end();
+        if(_.isDate(results[key].max_stock_date)){
+            const maxAftterOneDay = new Date();
+            maxAftterOneDay.setDate(results[key].max_stock_date.getDate()+1);
+            startTime = dateFormat(maxAftterOneDay);
+        }else {
+            //console.log(moment("1990-01-01","YYYY-MM-DD").format("YYYY-MM-DD"));
+            startTime = moment("1990-01-01", "YYYY-MM-DD").format("YYYYMMDD");
+        }
+
+        console.log("maxStockDate:"+startTime);
+
+        //금일날짜가 최신 날짜와 같거나 미래이면 수행 하지 않고 끝낸다.
+        if(todayString == startTime) {
+            return null;
+        }
+
+        /*
+            2.시세를 조회한다.
+         */
+        let siseUrl = `https://api.finance.naver.com/siseJson.naver?symbol=${eventCode}&requestType=1&startTime=${startTime}&endTime=${todayString}&timeframe=day`;
+        //let siseUrl = `https://api.finance.naver.com/siseJson.naver?symbol=${eventCode}&requestType=1&startTime=19961111&endTime=19961120&timeframe=day`;
+        console.log("siseUrl:" + siseUrl);
+
+        const response = await axios.get(siseUrl);
+
+        if (response.status === 200) {
+
+            /*
+                3.시세를 입력한다.
+             */
+
+            let sise = eval(response.data);
+            //console.log("sise[0]:"+sise[0]);
+            //sise.forEach(element => console.log(element[0]+","+element[1]));
+
+            //sis를 순회한다.
+            /* forEach
+            sise.forEach((v,i)=> {
+                console.log(i+'_'+v+'_'+v[0]);
+            });*/
+
+            /* for
+            for(let i = 0 ; i < sise.length ; i++) {
+                console.log(sise[i]);
+            }*/
+
+            //외국인 소진율이 ,만 있으면 배열에서 삭제 되어 Column count doesn't match value count at row 1 오류가 발생한다.
+            //head 행의 길이 보다 작으면 행의 마지막 길이 부분에 '0'을 넣자
+            console.log("siseLength:"+sise[0].length);
+            sise.forEach((v, i) => {
+                if(sise[0].length != sise[i].length){
+                    sise[i].splice(sise[0].length-1, 0, 0);
+                }
+
+            });
+
+            //날짜 항목을 가진 행을 삭제
+            let values = sise.filter((v,i)=> {
+                //console.log(i+'_'+v+'_'+v[0]);
+                return v[0] !== '날짜';
+            });
+
+
+
+            //날짜 항목 입력하기
+            let todayDateTime = moment().format('YYYYMMDDHHmmss');
+            values.forEach((v, i) => {
+                values[i].splice(0, 0, todayDateTime, 'lsh', todayDateTime, 'lsh',eventCode);
+            });
+
+            let insertQuery = "INSERT INTO stock.stock_price_information (reg_dtm,regr_id,mod_dtm,modr_id,event_code, stock_date, market_price, high_price, low_price, closing_price, trading_volume,foreign_burnout_rate) values ?;";
+            const query_str = connection.query(insertQuery, [values], (err, result) => {
+                if(err) {
+                    console.log(err);
+                }
+            });
+            console.log("query_str.sql:"+query_str.sql); // SQL Query문 출력
+            console.log("종목 :"+eventCode+" 시세조회 완료");
+            connection.end();
+
+
+
+        }//if
+
+
+    });
+
+
+
+
+
+
 
 
     return null;
-
-
-
-
-
-
-
-    if (response.status === 200) {
-
-        const opnions = JSON.stringify(response.data, null, 2); //API를 json으로 받아 온다.
-        //console.log(opnions);
-        const obj = JSON.parse(opnions); //json을 객체화
-        //console.log(obj.CHART);
-        const list = obj.CHART;
-
-        let connection = mysql.createConnection(conn); // DB 커넥션 생성
-        connection.connect();   // DB 접속
-
-        /*[CSR001]_종목별 최신을 읽어와 이후 종목 의견만 받아온다*/
-        let maxOpinionDate = '';
-        let maxOpinionDateQuery = `SELECT MAX(A.opinion_date) AS max_opinion_date FROM opinion_target_price A WHERE A.event_code = '${eventCode}'`;
-
-        connection.query(maxOpinionDateQuery, function(err, results, field) {
-            if (err) {
-                console.log(err);
-            }
-
-            for(key in results) {
-                maxOpinionDate = dateFormat(results[key].max_opinion_date);
-            }
-
-            let insertQuery = '';
-
-            for(key in list) {
-                if(list[key].TRD_DT > maxOpinionDate) {
-                    //console.log(list[key].TRD_DT);
-                    insertQuery = `INSERT INTO stock.opinion_target_price (reg_dtm,regr_id,mod_dtm,modr_id,event_code, opinion_date, investment_opinion, target_price, revised_stock_price)
-                                    VALUES (NOW(),'LSH',NOW(),'LSH','${eventCode}','${list[key].TRD_DT}','${list[key].VAL1}','${list[key].VAL2}','${list[key].VAL3}');`;
-
-                    connection.query(insertQuery, function (err, results, fields) { // insertQuery 실행
-                        if (err) {
-                            console.log(err);
-                        }
-                    });
-                }
-            }
-            console.log("종목 :"+eventCode+" 입력 완료");
-            connection.end();
-
-        });
-    }
 };
 
 const runFunction = (resolve,eventCode,t) => {
@@ -175,7 +203,7 @@ const crawlerSise  = () => {
     /*쿼리 생성 한다.*/
     //let testQuery = "SELECT event_code, company_name FROM event_info WHERE event_code in ('270870','067990','033500','141000');";
     //let testQuery = "SELECT event_code, company_name FROM event_info WHERE EVENT_CODE IN ('005930','005380','005490') ORDER BY event_code";
-    let testQuery = "SELECT event_code, company_name FROM event_info WHERE EVENT_CODE IN ('005930') ORDER BY event_code";
+    let testQuery = "SELECT event_code, company_name FROM event_info WHERE EVENT_CODE IN ('005380') ORDER BY event_code";
     let intever = 2000;
     let ms = 0;
     let idx = 0;
