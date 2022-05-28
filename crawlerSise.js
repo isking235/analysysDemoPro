@@ -61,10 +61,10 @@ function dateFormat(date) {
     return date.getFullYear() + month +  day;
 }
 
-const opinionLoad = async(eventCode) => {
+const opinionLoad = async (eventCode) => {
 
     let today = new Date();
-    let todayString  = dateFormat(today).replace('/','');
+    let todayString = dateFormat(today).replace('/', '');
 
     /*1.시작일을 뽑자
        - DB에 저장된 최대날짜를 조회
@@ -77,36 +77,35 @@ const opinionLoad = async(eventCode) => {
 
     let startTime;
     let maxStockDateQuery = `SELECT MAX(A.stock_date) AS max_stock_date FROM stock_price_information A WHERE A.event_code = '${eventCode}'`;
+    console.log("maxStockDateQuery:" + maxStockDateQuery);
 
-    connection.query(maxStockDateQuery, async  function (err, results, field) {
+
+    connection.query(maxStockDateQuery, async function (err, results, field) {
         if (err) {
             console.log(err);
         }
-        //console.log("results[key].max_stock_date:"+results[key].max_stock_date);
-        //console.log("_.isEmpty(results[key].max_stock_date) => "+_.isEmpty(results[key].max_stock_date));
-        //console.log("_.isDate(results[key].max_stock_date) => "+_.isDate(results[key].max_stock_date));
-
-        if(_.isDate(results[key].max_stock_date)){
+        //날짜값이 있는지 확인 한다.
+        if (_.isDate(results[0].max_stock_date)) {
             const maxAftterOneDay = new Date();
-            maxAftterOneDay.setDate(results[key].max_stock_date.getDate()+1);
+            maxAftterOneDay.setDate(results[0].max_stock_date.getDate() + 1);
             startTime = dateFormat(maxAftterOneDay);
-        }else {
-            //console.log(moment("1990-01-01","YYYY-MM-DD").format("YYYY-MM-DD"));
+
+        } else {
             startTime = moment("1990-01-01", "YYYY-MM-DD").format("YYYYMMDD");
         }
 
-        console.log("maxStockDate:"+startTime);
+        console.log("maxStockDate:" + startTime);
 
         //금일날짜가 최신 날짜와 같거나 미래이면 수행 하지 않고 끝낸다.
-        if(todayString == startTime) {
+        if (todayString == startTime) {
+            console.log("수행할게 없습니다.\n");
             return null;
         }
 
         /*
             2.시세를 조회한다.
          */
-        let siseUrl = `https://api.finance.naver.com/siseJson.naver?symbol=${eventCode}&requestType=1&startTime=${startTime}&endTime=${todayString}&timeframe=day`;
-        //let siseUrl = `https://api.finance.naver.com/siseJson.naver?symbol=${eventCode}&requestType=1&startTime=19961111&endTime=19961120&timeframe=day`;
+        const siseUrl = `https://api.finance.naver.com/siseJson.naver?symbol=${eventCode}&requestType=1&startTime=${startTime}&endTime=${todayString}&timeframe=day`;
         console.log("siseUrl:" + siseUrl);
 
         const response = await axios.get(siseUrl);
@@ -118,9 +117,6 @@ const opinionLoad = async(eventCode) => {
              */
 
             let sise = eval(response.data);
-            //console.log("sise[0]:"+sise[0]);
-            //sise.forEach(element => console.log(element[0]+","+element[1]));
-
             //sis를 순회한다.
             /* forEach
             sise.forEach((v,i)=> {
@@ -134,50 +130,40 @@ const opinionLoad = async(eventCode) => {
 
             //외국인 소진율이 ,만 있으면 배열에서 삭제 되어 Column count doesn't match value count at row 1 오류가 발생한다.
             //head 행의 길이 보다 작으면 행의 마지막 길이 부분에 '0'을 넣자
-            console.log("siseLength:"+sise[0].length);
             sise.forEach((v, i) => {
-                if(sise[0].length != sise[i].length){
-                    sise[i].splice(sise[0].length-1, 0, 0);
+                if (sise[0].length != sise[i].length) {
+                    sise[i].splice(sise[0].length - 1, 0, 0);
                 }
 
             });
 
             //날짜 항목을 가진 행을 삭제
-            let values = sise.filter((v,i)=> {
+            let values = sise.filter((v, i) => {
                 //console.log(i+'_'+v+'_'+v[0]);
                 return v[0] !== '날짜';
             });
 
-
-
             //날짜 항목 입력하기
             let todayDateTime = moment().format('YYYYMMDDHHmmss');
             values.forEach((v, i) => {
-                values[i].splice(0, 0, todayDateTime, 'lsh', todayDateTime, 'lsh',eventCode);
+                values[i].splice(0, 0, todayDateTime, 'lsh', todayDateTime, 'lsh', eventCode);
             });
 
             let insertQuery = "INSERT INTO stock.stock_price_information (reg_dtm,regr_id,mod_dtm,modr_id,event_code, stock_date, market_price, high_price, low_price, closing_price, trading_volume,foreign_burnout_rate) values ?;";
             const query_str = connection.query(insertQuery, [values], (err, result) => {
-                if(err) {
+                if (err) {
                     console.log(err);
                 }
             });
-            console.log("query_str.sql:"+query_str.sql); // SQL Query문 출력
-            console.log("종목 :"+eventCode+" 시세조회 완료");
+            //console.log("query_str.sql:" + query_str.sql); // SQL Query문 출력
+            console.log("종목 :" + eventCode + " 시세조회 완료\n");
             connection.end();
-
 
 
         }//if
 
 
     });
-
-
-
-
-
-
 
 
     return null;
@@ -202,8 +188,8 @@ const crawlerSise  = () => {
 
     /*쿼리 생성 한다.*/
     //let testQuery = "SELECT event_code, company_name FROM event_info WHERE event_code in ('270870','067990','033500','141000');";
-    //let testQuery = "SELECT event_code, company_name FROM event_info WHERE EVENT_CODE IN ('005930','005380','005490') ORDER BY event_code";
-    let testQuery = "SELECT event_code, company_name FROM event_info WHERE EVENT_CODE IN ('005380') ORDER BY event_code";
+    let testQuery = "SELECT event_code, company_name FROM event_info WHERE EVENT_CODE IN ('005930','005380','005490') ORDER BY event_code";
+    //let testQuery = "SELECT event_code, company_name FROM event_info WHERE EVENT_CODE IN ('005380') ORDER BY event_code;";
     let intever = 2000;
     let ms = 0;
     let idx = 0;
