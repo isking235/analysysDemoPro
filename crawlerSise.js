@@ -116,7 +116,12 @@ const opinionLoad = async (eventCode) => {
                 3.시세를 입력한다.
              */
 
+
             let sise = eval(response.data);
+            if(sise.length <= 1 ){
+                console.log("헤더만 들어오는 경우 처리 하지 않습니다.");
+                return null;
+            }
             //sis를 순회한다.
             /* forEach
             sise.forEach((v,i)=> {
@@ -142,6 +147,7 @@ const opinionLoad = async (eventCode) => {
                 //console.log(i+'_'+v+'_'+v[0]);
                 return v[0] !== '날짜';
             });
+            //console.log("values"+values);
 
             //날짜 항목 입력하기
             let todayDateTime = moment().format('YYYYMMDDHHmmss');
@@ -188,8 +194,9 @@ const crawlerSise  = () => {
 
     /*쿼리 생성 한다.*/
     //let testQuery = "SELECT event_code, company_name FROM event_info WHERE event_code in ('270870','067990','033500','141000');";
-    let testQuery = "SELECT event_code, company_name FROM event_info WHERE EVENT_CODE IN ('005930','005380','005490') ORDER BY event_code";
-    //let testQuery = "SELECT event_code, company_name FROM event_info WHERE EVENT_CODE IN ('005380') ORDER BY event_code;";
+    //let testQuery = "SELECT event_code, company_name FROM event_info WHERE EVENT_CODE IN ('005930','005380','005490') ORDER BY event_code";
+    //let testQuery = "SELECT event_code, company_name FROM event_info WHERE EVENT_CODE IN ('005930') ORDER BY event_code";
+    let testQuery = "SELECT event_code, company_name FROM event_info ORDER BY event_code;";
     let intever = 2000;
     let ms = 0;
     let idx = 0;
