@@ -61,7 +61,7 @@ function dateFormat(date) {
     return date.getFullYear() + month +  day;
 }
 
-const opinionLoad = async (eventCode) => {
+const opinionLoad = async (stockCode) => {
 
     let today = new Date();
     let todayString = dateFormat(today).replace('/', '');
@@ -76,7 +76,7 @@ const opinionLoad = async (eventCode) => {
     connection.connect();   // DB 접속
 
     let startTime;
-    let maxStockDateQuery = `SELECT MAX(A.stock_date) AS max_stock_date FROM stock_price_information A WHERE A.event_code = '${eventCode}'`;
+    let maxStockDateQuery = `SELECT MAX(A.stock_date) AS max_stock_date FROM stock_price_information A WHERE A.stock_code = '${stockCode}'`;
     console.log("maxStockDateQuery:" + maxStockDateQuery);
 
 
@@ -105,7 +105,7 @@ const opinionLoad = async (eventCode) => {
         /*
             2.시세를 조회한다.
          */
-        const siseUrl = `https://api.finance.naver.com/siseJson.naver?symbol=${eventCode}&requestType=1&startTime=${startTime}&endTime=${todayString}&timeframe=day`;
+        const siseUrl = `https://api.finance.naver.com/siseJson.naver?symbol=${stockCode}&requestType=1&startTime=${startTime}&endTime=${todayString}&timeframe=day`;
         console.log("siseUrl:" + siseUrl);
 
         const response = await axios.get(siseUrl);
@@ -152,17 +152,17 @@ const opinionLoad = async (eventCode) => {
             //날짜 항목 입력하기
             let todayDateTime = moment().format('YYYYMMDDHHmmss');
             values.forEach((v, i) => {
-                values[i].splice(0, 0, todayDateTime, 'lsh', todayDateTime, 'lsh', eventCode);
+                values[i].splice(0, 0, todayDateTime, 'lsh', todayDateTime, 'lsh', stockCode);
             });
 
-            let insertQuery = "INSERT INTO stock.stock_price_information (reg_dtm,regr_id,mod_dtm,modr_id,event_code, stock_date, market_price, high_price, low_price, closing_price, trading_volume,foreign_burnout_rate) values ?;";
+            let insertQuery = "INSERT INTO stock.stock_price_information (reg_dtm,regr_id,mod_dtm,modr_id,stock_code, stock_date, market_price, high_price, low_price, closing_price, trading_volume,foreign_burnout_rate) values ?;";
             const query_str = connection.query(insertQuery, [values], (err, result) => {
                 if (err) {
                     console.log(err);
                 }
             });
             //console.log("query_str.sql:" + query_str.sql); // SQL Query문 출력
-            console.log("종목 :" + eventCode + " 시세조회 완료\n");
+            console.log("종목 :" + stockCode + " 시세조회 완료\n");
             connection.end();
 
 
@@ -175,15 +175,15 @@ const opinionLoad = async (eventCode) => {
     return null;
 };
 
-const runFunction = (resolve,eventCode,t) => {
-    console.log("sleep : "+(t/1000)+"초_eventCode : "+eventCode);
-    opinionLoad(eventCode); //종목코드를 보내준다.
+const runFunction = (resolve,stockCode,t) => {
+    console.log("sleep : "+(t/1000)+"초_stockCode : "+stockCode);
+    opinionLoad(stockCode); //종목코드를 보내준다.
     return resolve;
 }
 
-function sleep(eventCode, t){
+function sleep(stockCode, t){
     
-    return new Promise((resolve)=>setTimeout(runFunction,t,resolve,eventCode,t)); //settimeout(함수명, 시간(인터벌),...(함수의 파라미터) ) https://ko.javascript.info/settimeout-setinterval
+    return new Promise((resolve)=>setTimeout(runFunction,t,resolve,stockCode,t)); //settimeout(함수명, 시간(인터벌),...(함수의 파라미터) ) https://ko.javascript.info/settimeout-setinterval
 }
 
 const crawlerSise  = () => {
@@ -193,10 +193,10 @@ const crawlerSise  = () => {
     connection.connect();   // DB 접속
 
     /*쿼리 생성 한다.*/
-    //let testQuery = "SELECT event_code, company_name FROM event_info WHERE event_code in ('270870','067990','033500','141000');";
-    //let testQuery = "SELECT event_code, company_name FROM event_info WHERE EVENT_CODE IN ('005930','005380','005490') ORDER BY event_code";
-    //let testQuery = "SELECT event_code, company_name FROM event_info WHERE EVENT_CODE IN ('005930') ORDER BY event_code";
-    let testQuery = "SELECT event_code, company_name FROM event_info ORDER BY event_code;";
+    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code in ('270870','067990','033500','141000');";
+    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code IN ('005930','005380','005490') ORDER BY stock_code";
+    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code IN ('005930') ORDER BY stock_code";
+    //let testQuery = "SELECT stock_code, company_name FROM stocks_info ORDER BY stock_code;";
     let intever = 2000;
     let ms = 0;
     let idx = 0;
@@ -212,7 +212,7 @@ const crawlerSise  = () => {
             
             (async function(){
                 //메인 코드
-                await sleep(results[key].event_code, ms);
+                await sleep(results[key].stock_code, ms);
             })();
             idx++;
         }

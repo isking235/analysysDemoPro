@@ -23,7 +23,7 @@ const crawler  = async () => {
       코스피, 코스닥을 호출 했는데 코스피만오네 ...
     */
     //const response = await axios.get("https://kind.krx.co.kr/corpgeneral/corpList.do?method=download&pageIndex=1&currentPageSize=5000&comAbbrv=&beginIndex=&orderMode=3&orderStat=D&isurCd=&repIsuSrtCd=&searchCodeType=&marketType=stockMkt&searchType=13&industry=&fiscalYearEnd=all&comAbbrvTmp=&location=all");
-    const eventKind = "kospi";
+    const stockKind = "kospi";
     const response = await axios.get("https://kind.krx.co.kr/corpgeneral/corpList.do?method=download&pageIndex=1&currentPageSize=5000&comAbbrv=&beginIndex=&orderMode=3&orderStat=D&isurCd=&repIsuSrtCd=&searchCodeType=&marketType=stockMkt&searchType=13&industry=&fiscalYearEnd=all&comAbbrvTmp=&location=all",{responseEncoding : 'binary', responseType : 'arraybuffer'});
     if (response.status === 200) {
       
@@ -54,7 +54,7 @@ const crawler  = async () => {
       for(var key in scrapedData) {
 
         //console.log(scrapedData[key].company);
-        testQuery += `INSERT INTO event_info (event_kind, event_code, company_name, reg_dtm, regr_id, mod_dtm, modr_id) VALUES('${eventKind}','${scrapedData[key].comNum}','${scrapedData[key].company}', NOW(),'LSH',NOW(), 'LSH');`;
+        testQuery += `INSERT INTO stocks_info (stock_kind, stock_code, company_name, reg_dtm, regr_id, mod_dtm, modr_id) VALUES('${stockKind}','${scrapedData[key].comNum}','${scrapedData[key].company}', NOW(),'LSH',NOW(), 'LSH');`;
 
         
       }

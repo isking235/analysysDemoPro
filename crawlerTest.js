@@ -19,19 +19,19 @@ const conn = {  // mysql 접속 설정
     database: process.env.DB_NAME,
 };
 
-const runFunction = (resolve,eventCode,t) => {
-    console.log("sleep : "+(t/1000)+"초_eventCode : "+eventCode);
-    outPutTest(eventCode); //종목코드를 보내준다.
+const runFunction = (resolve,stockCode,t) => {
+    console.log("sleep : "+(t/1000)+"초_stockCode : "+stockCode);
+    outPutTest(stockCode); //종목코드를 보내준다.
     return resolve;
 }
 
-const outPutTest = (eventCode) => {
-    console.log("outPutTest : "+eventCode);
+const outPutTest = (stockCode) => {
+    console.log("outPutTest : "+stockCode);
 }
 
-function sleep(eventCode, t){
+function sleep(stockCode, t){
     
-    return new Promise((resolve)=>setTimeout(runFunction,t,resolve,eventCode,t)); //settimeout(함수명, 시간(인터벌),...(함수의 파라미터) ) https://ko.javascript.info/settimeout-setinterval
+    return new Promise((resolve)=>setTimeout(runFunction,t,resolve,stockCode,t)); //settimeout(함수명, 시간(인터벌),...(함수의 파라미터) ) https://ko.javascript.info/settimeout-setinterval
 }
 
 const crawlerTest  = () => {
@@ -41,8 +41,8 @@ const crawlerTest  = () => {
     connection.connect();   // DB 접속
 
     /*쿼리 생성 한다.*/
-    //let testQuery = "SELECT event_code, company_name FROM event_info WHERE event_code in ('270870','067990','033500','141000');";
-    let testQuery = "SELECT event_code, company_name FROM event_info WHERE event_code  in ('005930') ORDER BY event_code";
+    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code in ('270870','067990','033500','141000');";
+    let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code  in ('005930') ORDER BY stock_code";
     let intever = 2000;
     let ms = 0;
     let idx = 0;
@@ -58,7 +58,7 @@ const crawlerTest  = () => {
             
             (async function(){
                 //메인 코드
-                await sleep(results[key].event_code, ms);
+                await sleep(results[key].stock_code, ms);
             })();
             idx++;
         }

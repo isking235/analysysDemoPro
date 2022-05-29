@@ -14,9 +14,9 @@ const conn = {  // mysql 접속 설정
     database: process.env.DB_NAME,
 };
 
-const stockPriceLoad = async(eventCode) => {
+const stockPriceLoad = async(stockCode) => {
 
-    let stockPriceUrl = `http://m.comp.fnguide.com/m2/data/json/chart/01_02/chart_A${eventCode}.json`;
+    let stockPriceUrl = `http://m.comp.fnguide.com/m2/data/json/chart/01_02/chart_A${stockCode}.json`;
     console.log("stockPriceLoad.stockPriceUrl :"+ stockPriceUrl);
 
     const response = await axios.get(stockPriceUrl);
@@ -34,7 +34,7 @@ const stockPriceLoad = async(eventCode) => {
 
         /*[CSR001]_종목별 최신을 읽어와 이후 종목 의견만 받아온다*/
         let maxOpinionDate = '';
-        let maxOpinionDateQuery = `SELECT MAX(A.opinion_date) AS max_opinion_date FROM opinion_target_price A WHERE A.event_code = '${eventCode}'`;
+        let maxOpinionDateQuery = `SELECT MAX(A.opinion_date) AS max_opinion_date FROM opinion_target_price A WHERE A.stock_code = '${stockCode}'`;
 
         connection.query(maxOpinionDateQuery, function(err, results, field) {
             if (err) {
@@ -50,8 +50,8 @@ const stockPriceLoad = async(eventCode) => {
             for(key in list) {
                 if(list[key].TRD_DT > maxOpinionDate) {
                     //console.log(list[key].TRD_DT);
-                    insertQuery = `INSERT INTO stock.opinion_target_price (reg_dtm,regr_id,mod_dtm,modr_id,event_code, opinion_date, investment_opinion, target_price, revised_stock_price)
-                                    VALUES (NOW(),'LSH',NOW(),'LSH','${eventCode}','${list[key].TRD_DT}','${list[key].VAL1}','${list[key].VAL2}','${list[key].VAL3}');`;
+                    insertQuery = `INSERT INTO stock.opinion_target_price (reg_dtm,regr_id,mod_dtm,modr_id,stock_code, opinion_date, investment_opinion, target_price, revised_stock_price)
+                                    VALUES (NOW(),'LSH',NOW(),'LSH','${stockCode}','${list[key].TRD_DT}','${list[key].VAL1}','${list[key].VAL2}','${list[key].VAL3}');`;
 
                     connection.query(insertQuery, function (err, results, fields) { // insertQuery 실행
                         if (err) {
@@ -60,27 +60,27 @@ const stockPriceLoad = async(eventCode) => {
                     });
                 }
             }
-            console.log("종목 :"+eventCode+" 입력 완료");
+            console.log("종목 :"+stockCode+" 입력 완료");
             connection.end();
 
         });
     }
 };
 
-const runFunction = (resolve,eventCode,t) => {
-    console.log("sleep : "+(t/1000)+"초_eventCode : "+eventCode);
-    stockPriceLoadTest(eventCode); //종목코드를 보내준다.
+const runFunction = (resolve,stockCode,t) => {
+    console.log("sleep : "+(t/1000)+"초_stockCode : "+stockCode);
+    stockPriceLoadTest(stockCode); //종목코드를 보내준다.
     return resolve;
 }
 
-function sleep(eventCode, t){
+function sleep(stockCode, t){
 
-    return new Promise((resolve)=>setTimeout(runFunction,t,resolve,eventCode,t)); //settimeout(함수명, 시간(인터벌),...(함수의 파라미터) ) https://ko.javascript.info/settimeout-setinterval
+    return new Promise((resolve)=>setTimeout(runFunction,t,resolve,stockCode,t)); //settimeout(함수명, 시간(인터벌),...(함수의 파라미터) ) https://ko.javascript.info/settimeout-setinterval
 }
 
-const stockPriceLoadTest = async(eventCode) => {
+const stockPriceLoadTest = async(stockCode) => {
 
-    let stockPriceUrl = `https://api.finance.naver.com/siseJson.naver?symbol=${eventCode}&requestType=1&startTime=20220401&endTime=20220417&timeframe=day`;
+    let stockPriceUrl = `https://api.finance.naver.com/siseJson.naver?symbol=${stockCode}&requestType=1&startTime=20220401&endTime=20220417&timeframe=day`;
     console.log("stockPriceLoad.stockPriceUrl :"+ stockPriceUrl);
 
     const response = await axios.get(stockPriceUrl);
@@ -104,8 +104,8 @@ const crawlerStockPrice  = () => {
     connection.connect();   // DB 접속
 
     /*쿼리 생성 한다.*/
-    //let testQuery = "SELECT event_code, company_name FROM event_info WHERE event_code in ('270870','067990','033500','141000');";
-    let testQuery = "SELECT event_code, company_name FROM event_info WHERE event_code in ('005930') ORDER BY event_code";
+    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code in ('270870','067990','033500','141000');";
+    let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code in ('005930') ORDER BY stock_code";
     let intever = 2000;
     let ms = 0;
     let idx = 0;
@@ -121,7 +121,7 @@ const crawlerStockPrice  = () => {
 
             (async function(){
                 //메인 코드
-                await sleep(results[key].event_code, ms);
+                await sleep(results[key].stock_code, ms);
             })();
             idx++;
         }

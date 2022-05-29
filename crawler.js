@@ -13,7 +13,7 @@ const conn = {  // mysql 접속 설정
     database: process.env.DB_NAME,
 };
 
-const crawler  = async (eventKind) => {
+const crawler  = async (stockKind) => {
     
   /**********************************************************
     1. 주식종목 url을 호출한다
@@ -23,10 +23,10 @@ const crawler  = async (eventKind) => {
       코스피, 코스닥을 호출 했는데 코스피만오네 ...
     */
 	let url = "";
-	if(eventKind === "KOSPI") {
+	if(stockKind === "KOSPI") {
 		url = "https://kind.krx.co.kr/corpgeneral/corpList.do?method=download&pageIndex=1&currentPageSize=5000&orderMode=3&orderStat=D&marketType=stockMkt&searchType=13&fiscalYearEnd=all&location=all"
 		
-	}else if(eventKind === "KOSDAQ") {
+	}else if(stockKind === "KOSDAQ") {
 		url = "https://kind.krx.co.kr/corpgeneral/corpList.do?method=download&pageIndex=1&currentPageSize=5000&orderMode=3&orderStat=D&marketType=kosdaqMkt&searchType=13&fiscalYearEnd=all&location=all"
 		
 	}
@@ -62,7 +62,7 @@ const crawler  = async (eventKind) => {
       for(var key in scrapedData) {
 
         //console.log(scrapedData[key].company);
-        testQuery = `INSERT INTO event_info (event_kind, event_code, company_name, reg_dtm, regr_id, mod_dtm, modr_id) VALUES('${eventKind}','${scrapedData[key].comNum}','${scrapedData[key].company}', NOW(),'LSH',NOW(), 'LSH');`;
+        testQuery = `INSERT INTO stocks_info (stock_kind, stock_code, company_name, reg_dtm, regr_id, mod_dtm, modr_id) VALUES('${stockKind}','${scrapedData[key].comNum}','${scrapedData[key].company}', NOW(),'LSH',NOW(), 'LSH');`;
         connection.query(testQuery, function (err, results, fields) { // testQuery 실행
           if (err) {
             console.log(err);
@@ -74,7 +74,7 @@ const crawler  = async (eventKind) => {
         
       }
 
-      console.log("lsh : 입력 종료"+eventKind);
+      console.log("lsh : 입력 종료"+stockKind);
       
       
     }
