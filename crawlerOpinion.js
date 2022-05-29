@@ -123,8 +123,8 @@ function sleep(stockCode, t){
     return new Promise((resolve)=>setTimeout(runFunction,t,resolve,stockCode,t)); //settimeout(함수명, 시간(인터벌),...(함수의 파라미터) ) https://ko.javascript.info/settimeout-setinterval
 }
 
-const crawlerEventOpinion  = () => {
-    console.log("crawlerEventOpinion start");
+const crawlerOpinion  = () => {
+    console.log("crawlerOpinion start");
     /*DB에 입력 해 보자*/
     let connection = mysql.createConnection(conn); // DB 커넥션 생성
     connection.connect();   // DB 접속
@@ -156,5 +156,5 @@ const crawlerEventOpinion  = () => {
     });
 
 };
-crawlerEventOpinion();
+crawlerOpinion();
 console.log("end");
