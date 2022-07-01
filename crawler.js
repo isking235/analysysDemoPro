@@ -110,70 +110,55 @@ const crawler  = async (stockKind) => {
           //일치한 경우가 없었다면 해당 코드는 db입력하자.
           if(!insertCheck) {
             console.log("입력대상 찾았다.=>"+comNum);
-            /*let insertQuery = `INSERT INTO stocks_info (stock_kind, stock_code, company_name, reg_dtm, regr_id, mod_dtm, modr_id, del_yn) VALUES('${stockKind}','${scrapedData[i].comNum}','${scrapedData[i].company}', NOW(),'LSH',NOW(), 'LSH','N')`;
+            let insertQuery = `INSERT INTO stocks_info (stock_kind, stock_code, company_name, reg_dtm, regr_id, mod_dtm, modr_id, del_yn) VALUES('${stockKind}','${scrapedData[i].comNum}','${scrapedData[i].company}', NOW(),'LSH',NOW(), 'LSH','N')`;
             connection.query(insertQuery, function (err, results, fields) { // testQuery 실행
               if (err) {
                 console.log(err);
               }
               console.log(results);
 
-            });*/
+            });
           }
 
           insertCheck = false;
           //console.log(i+"_"+comNum);
-          // 임시로 끝내자
-          if( i == 100){
-            break;
-          }
-
         }
 
 
         //DB종목을 순회 한다.
+        let updateCheck = false;
         for(let i=0 ; i < results.length ; i++ ) {
           stockCode =results[i].stock_code;
 
-          //db 목록을 순회하면서 일치 한게 없으면 해당 코드는 입력 한다.
+          //db 목록을 순회하면서 일치 한게 없으면 해당 코드는 'Y'로 수정 한다.
           for(let j=0; j < scrapedData.length ; j ++ ) {
             comNum = scrapedData[j].comNum;
             if(stockCode === comNum){
               console.log("삭제 안할 놈 찾았다=>"+comNum);
-              continue;
+              updateCheck = true;
+              break;
             }
           }
 
+          //일치한 경우가 없었다면 Del_yn을 'Y'로 수정하자.
+          if(!updateCheck) {
+            console.log("=>"+stockCode);
+            let updateQuery = `UPDATE stocks_info SET DEL_YN = 'Y', MOD_DTM = NOW() WHERE stock_code = '${stockCode}'`;
+            connection.query(updateQuery, function (err, results, fields) { // testQuery 실행
+              if (err) {
+                console.log(err);
+              }
+              console.log(results);
 
-
-          // 임시로 끝내자
-          if( i == 100){
-            break;
+            });
           }
-
+          updateCheck = false;
         }
 
 
 
       });
 
-
-      /*쿼리 생성 한다.*/
-      /*let testQuery = "";
-      for(let key in scrapedData) {
-
-        //console.log(scrapedData[key].company);
-        testQuery = `INSERT INTO stocks_info (stock_kind, stock_code, company_name, reg_dtm, regr_id, mod_dtm, modr_id) VALUES('${stockKind}','${scrapedData[key].comNum}','${scrapedData[key].company}', NOW(),'LSH',NOW(), 'LSH');`;
-        connection.query(testQuery, function (err, results, fields) { // testQuery 실행
-          if (err) {
-            console.log(err);
-          }
-          console.log(results);
-          
-        });
-
-        
-      }//if
-      */
       console.log("lsh : 입력 종료"+stockKind);
       
       
@@ -182,5 +167,5 @@ const crawler  = async (stockKind) => {
   
 };
 
-crawler("KOSPI");
-//crawler("KOSDAQ");
+//crawler("KOSPI");
+crawler("KOSDAQ");
