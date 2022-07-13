@@ -1,5 +1,8 @@
+
 /*
 종목 정보 테이블을 읽어서 목표가및 의견 정보를 입력하자
+이건 사용 안함
+
  */
 const axios = require('axios');
 const mysql = require('mysql');  // mysql 모듈 로드

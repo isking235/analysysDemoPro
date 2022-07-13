@@ -134,7 +134,7 @@ const crawler  = async (stockKind) => {
           for(let j=0; j < scrapedData.length ; j ++ ) {
             comNum = scrapedData[j].comNum;
             if(stockCode === comNum){
-              console.log("삭제 안할 놈 찾았다=>"+comNum);
+              //console.log("삭제 안할 놈 찾았다=>"+comNum);
               updateCheck = true;
               break;
             }
@@ -142,7 +142,7 @@ const crawler  = async (stockKind) => {
 
           //일치한 경우가 없었다면 Del_yn을 'Y'로 수정하자.
           if(!updateCheck) {
-            console.log("=>"+stockCode);
+            console.log("삭제 대상=>"+stockCode);
             let updateQuery = `UPDATE stocks_info SET DEL_YN = 'Y', MOD_DTM = NOW() WHERE stock_code = '${stockCode}'`;
             connection.query(updateQuery, function (err, results, fields) { // testQuery 실행
               if (err) {
@@ -167,5 +167,5 @@ const crawler  = async (stockKind) => {
   
 };
 
-//crawler("KOSPI");
-crawler("KOSDAQ");
+crawler("KOSPI");
+//crawler("KOSDAQ");

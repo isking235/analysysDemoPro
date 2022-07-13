@@ -7,7 +7,8 @@ history
 종목 정보 테이블을 읽어서 목표가및 의견 정보를 입력하자
  */
 const axios = require('axios');
-const mysql = require('mysql');  // mysql 모듈 로드
+const mysql = require('mysql');
+const moment = require("moment");  // mysql 모듈 로드
 require('dotenv').config();
 
 
@@ -86,8 +87,15 @@ const opinionLoad = async(stockCode) => {
                 console.log(err);
             }
 
+            console.log("results:"+results);
+
             for(key in results) {
-                maxOpinionDate = dateFormat(results[key].max_opinion_date);
+                if(results[key].max_opinion_date !== null) {
+                    maxOpinionDate = dateFormat(results[key].max_opinion_date);
+                }else {
+                    maxOpinionDate = moment("1990-01-01", "YYYY-MM-DD").format("YYYYMMDD");
+                }
+
             }
 
             let insertQuery = '';
@@ -130,8 +138,9 @@ const crawlerOpinion  = () => {
     connection.connect();   // DB 접속
 
     /*쿼리 생성 한다.*/
-    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code in ('270870','067990','033500','141000');";
-    let testQuery = "SELECT stock_code, company_name FROM stocks_info ORDER BY stock_code";
+    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code in ('089860');";
+    let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE DEL_YN='N' ORDER BY stock_code";
+    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code >  '089860'  ORDER BY stock_code";
     let intever = 2000;
     let ms = 0;
     let idx = 0;

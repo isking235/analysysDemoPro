@@ -86,7 +86,7 @@ const opinionLoad = async (stockCode) => {
         }
         //날짜값이 있는지 확인 한다.
         if (_.isDate(results[0].max_stock_date)) {
-            const maxAftterOneDay = new Date();
+            let maxAftterOneDay = results[0].max_stock_date;
             maxAftterOneDay.setDate(results[0].max_stock_date.getDate() + 1);
             startTime = dateFormat(maxAftterOneDay);
 
@@ -195,8 +195,8 @@ const crawlerSise  = () => {
     /*쿼리 생성 한다.*/
     //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code in ('270870','067990','033500','141000');";
     //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code IN ('005930','005380','005490') ORDER BY stock_code";
-    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code IN ('005930') ORDER BY stock_code";
-    //let testQuery = "SELECT stock_code, company_name FROM stocks_info ORDER BY stock_code;";
+    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code IN ('000020') ORDER BY stock_code";
+    let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE DEL_YN='N' AND stock_code >= '343510' ORDER BY stock_code";
     let intever = 2000;
     let ms = 0;
     let idx = 0;
