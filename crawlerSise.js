@@ -196,7 +196,16 @@ const crawlerSise  = () => {
     //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code in ('270870','067990','033500','141000');";
     //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code IN ('005930','005380','005490') ORDER BY stock_code";
     //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code IN ('000020') ORDER BY stock_code";
-    let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE DEL_YN='N' AND stock_code >= '343510' ORDER BY stock_code";
+    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE DEL_YN='N' AND stock_code >= '343510' ORDER BY stock_code";
+    let testQuery = "SELECT \n" +
+        "      stock_code, company_name\n" +
+        "  FROM stocks_info A\n" +
+        " WHERE A.DEL_YN='N'\n" +
+        "    AND A.stock_code NOT IN (\n" +
+        "    SELECT distinct z.stock_code FROM stock_price_information z WHERE  reg_dtm > DATE_FORMAT(NOW(),'%Y/%m/%d')\n" +
+        "    )\n" +
+        " ORDER BY A.stock_code";
+
     let intever = 2000;
     let ms = 0;
     let idx = 0;
@@ -206,6 +215,7 @@ const crawlerSise  = () => {
         if (err) {
             console.log(err);
         }
+        console.log("종목시세 수집대상 갯수: " + results.length);
 
         for(key in results) {
             ms = (idx+1)*intever;

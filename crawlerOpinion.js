@@ -139,8 +139,16 @@ const crawlerOpinion  = () => {
 
     /*쿼리 생성 한다.*/
     //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code in ('089860');";
-    let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE DEL_YN='N' ORDER BY stock_code";
+    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE DEL_YN='N' ORDER BY stock_code";
     //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code >  '089860'  ORDER BY stock_code";
+    let testQuery = "SELECT \n" +
+        "      stock_code, company_name\n" +
+        "  FROM stocks_info A\n" +
+        " WHERE A.DEL_YN='N'\n" +
+        "    AND A.stock_code NOT IN (\n" +
+        "    SELECT distinct Z.stock_code FROM opinion_target_price Z WHERE  Z.reg_dtm > DATE_FORMAT(NOW(),'%Y/%m/%d')\n" +
+        "    )\n" +
+        " ORDER BY A.stock_code;";
     let intever = 2000;
     let ms = 0;
     let idx = 0;
@@ -150,6 +158,7 @@ const crawlerOpinion  = () => {
         if (err) {
             console.log(err);
         }
+        console.log("종목의견 수집대상 갯수: " + results.length);
 
         for(key in results) {
             ms = (idx+1)*intever;
