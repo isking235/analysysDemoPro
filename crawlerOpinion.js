@@ -87,8 +87,6 @@ const opinionLoad = async(stockCode) => {
                 console.log(err);
             }
 
-            console.log("results:"+results);
-
             for(key in results) {
                 if(results[key].max_opinion_date !== null) {
                     maxOpinionDate = dateFormat(results[key].max_opinion_date);

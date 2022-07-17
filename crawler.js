@@ -167,5 +167,5 @@ const crawler  = async (stockKind) => {
   
 };
 
-crawler("KOSPI");
-//crawler("KOSDAQ");
+//crawler("KOSPI");
+crawler("KOSDAQ");
