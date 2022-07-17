@@ -99,6 +99,7 @@ const opinionLoad = async (stockCode) => {
         //금일날짜가 최신 날짜와 같거나 미래이면 수행 하지 않고 끝낸다.
         if (todayString == startTime) {
             console.log("수행할게 없습니다.\n");
+            connection.end();
             return null;
         }
 
@@ -163,11 +164,11 @@ const opinionLoad = async (stockCode) => {
             });
             //console.log("query_str.sql:" + query_str.sql); // SQL Query문 출력
             console.log("종목 :" + stockCode + " 시세조회 완료\n");
-            connection.end();
+
 
 
         }//if
-
+        connection.end();
 
     });
 
