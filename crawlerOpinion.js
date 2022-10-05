@@ -9,6 +9,7 @@ history
 const axios = require('axios');
 const mysql = require('mysql');
 const moment = require("moment");  // mysql 모듈 로드
+const _ = require('lodash');
 require('dotenv').config();
 
 
@@ -89,8 +90,14 @@ const opinionLoad = async(stockCode) => {
 
             for(key in results) {
                 if(results[key].max_opinion_date !== null) {
-                    maxOpinionDate = dateFormat(results[key].max_opinion_date);
-                }else {
+                    if(_.isDate(results[key].max_opinion_date)) {
+                        maxOpinionDate = dateFormat(results[key].max_opinion_date);
+                    }else {
+                        maxOpinionDate = results[key].max_opinion_date;
+                    }
+
+                }
+                else {
                     maxOpinionDate = moment("1990-01-01", "YYYY-MM-DD").format("YYYYMMDD");
                 }
 
@@ -136,7 +143,7 @@ const crawlerOpinion  = () => {
     connection.connect();   // DB 접속
 
     /*쿼리 생성 한다.*/
-    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code in ('089860');";
+    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code in ('000020');";
     //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE DEL_YN='N' ORDER BY stock_code";
     //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code >  '089860'  ORDER BY stock_code";
     let testQuery = "SELECT \n" +
