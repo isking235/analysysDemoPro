@@ -12,12 +12,16 @@ const conn = {  // mysql 접속 설정
     password: process.env.DB_PW,
     database: process.env.DB_NAME,
 };
-
+/*
+1. 코스닥에서 코스피로 가는 경우 어떻게 하지?
+2. 회사가 합병 하면 어떻게 하지?
+* */
 const crawler  = async (stockKind) => {
     
   /**********************************************************
     1. 주식종목 url을 호출한다
     2. 항목을 cheerio로 파싱한다.
+
     *********************************************************/ 
     /*url을 호출 한다.
       코스피, 코스닥을 호출 했는데 코스피만오네 ...
@@ -167,5 +171,5 @@ const crawler  = async (stockKind) => {
   
 };
 
-crawler("KOSPI");
-//crawler("KOSDAQ");
+//crawler("KOSPI");
+crawler("KOSDAQ");

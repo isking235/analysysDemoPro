@@ -23,48 +23,9 @@ const conn = {  // mysql 접속 설정
     database: process.env.DB_NAME,
 };
 
-/*
-2022-04-16 날짜를 datetime 포멧으로 가져온다.
-**/
-function datetimeFormat(date) {
-    let month = date.getMonth() + 1;
-    let day = date.getDate();
-    let hour = date.getHours();
-    let minute = date.getMinutes();
-    let second = date.getSeconds();
-
-    month = month >= 10 ? month : '0' + month;
-    day = day >= 10 ? day : '0' + day;
-    hour = hour >= 10 ? hour : '0' + hour;
-    minute = minute >= 10 ? minute : '0' + minute;
-    second = second >= 10 ? second : '0' + second;
-
-    return date.getFullYear() + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
-}
-
-/*
-2022-04-16 날짜를 date 포멧으로 가져온다.
-**/
-function dateFormat(date) {
-    let month = date.getMonth() + 1;
-    let day = date.getDate();
-    let hour = date.getHours();
-    let minute = date.getMinutes();
-    let second = date.getSeconds();
-
-    month = month >= 10 ? month : '0' + month;
-    day = day >= 10 ? day : '0' + day;
-    hour = hour >= 10 ? hour : '0' + hour;
-    minute = minute >= 10 ? minute : '0' + minute;
-    second = second >= 10 ? second : '0' + second;
-
-    return date.getFullYear() + month +  day;
-}
-
 const opinionLoad = async (stockCode) => {
 
-    let today = new Date();
-    let todayString = dateFormat(today).replace('/', '');
+    let todayString = moment().format("YYYYMMDD");
 
     /*1.시작일을 뽑자
        - DB에 저장된 최대날짜를 조회
@@ -88,7 +49,7 @@ const opinionLoad = async (stockCode) => {
         if (_.isDate(results[0].max_stock_date)) {
             let maxAftterOneDay = results[0].max_stock_date;
             maxAftterOneDay.setDate(results[0].max_stock_date.getDate() + 1);
-            startTime = dateFormat(maxAftterOneDay);
+            startTime = moment(maxAftterOneDay).format("YYYYMMDD");
 
         } else {
             startTime = moment("1990-01-01", "YYYY-MM-DD").format("YYYYMMDD");
@@ -196,7 +157,7 @@ const crawlerSise  = () => {
     /*쿼리 생성 한다.*/
     //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code in ('270870','067990','033500','141000');";
     //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code IN ('005930','005380','005490') ORDER BY stock_code";
-    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code IN ('000020') ORDER BY stock_code";
+    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code IN ('000040') ORDER BY stock_code";
     //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE DEL_YN='N' AND stock_code >= '343510' ORDER BY stock_code";
     let testQuery = "SELECT \n" +
         "      stock_code, company_name\n" +
