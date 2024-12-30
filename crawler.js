@@ -18,6 +18,7 @@ const conn = {  // mysql 접속 설정
 
 
 2024-11-05 이상호 종목의 타입에 상관없이 입력 및 삭제 하도록 한다. 수정용 파일을 복사하였음. crawlerTypeModify.js
+45
 * */
 const crawler  = async (stockKind) => {
     
