@@ -159,14 +159,15 @@ const crawlerSise  = () => {
     //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code IN ('005930','005380','005490') ORDER BY stock_code";
     //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code IN ('000040') ORDER BY stock_code";
     //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE DEL_YN='N' AND stock_code >= '343510' ORDER BY stock_code";
-    let testQuery = "SELECT \n" +
-        "      stock_code, company_name\n" +
-        "  FROM stocks_info A\n" +
-        " WHERE A.DEL_YN='N'\n" +
-        "    AND A.stock_code NOT IN (\n" +
-        "    SELECT distinct z.stock_code FROM stock_price_information z WHERE  reg_dtm > DATE_FORMAT(NOW(),'%Y/%m/%d')\n" +
-        "    )\n" +
-        " ORDER BY A.stock_code";
+    let testQuery = "SELECT DISTINCT A.stock_code, A.company_name \n" +
+                    "FROM stocks_info A \n" +
+                    "LEFT JOIN ( \n" +
+                    "    SELECT DISTINCT stock_code  \n" +
+                    "    FROM stock_price_information \n" +
+                    "    WHERE reg_dtm > CURDATE() \n" +
+                    ") z ON A.stock_code = z.stock_code \n" +
+                    "WHERE A.DEL_YN = 'N' AND z.stock_code IS NULL \n" +
+                    "ORDER BY A.stock_code";
 
     let intever = 2000;
     let ms = 0;
