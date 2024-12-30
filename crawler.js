@@ -15,6 +15,9 @@ const conn = {  // mysql 접속 설정
 /*
 1. 코스닥에서 코스피로 가는 경우 어떻게 하지?
 2. 회사가 합병 하면 어떻게 하지?
+
+
+2024-11-05 이상호 종목의 타입에 상관없이 입력 및 삭제 하도록 한다. 수정용 파일을 복사하였음. crawlerTypeModify.js
 * */
 const crawler  = async (stockKind) => {
     
@@ -26,14 +29,8 @@ const crawler  = async (stockKind) => {
     /*url을 호출 한다.
       코스피, 코스닥을 호출 했는데 코스피만오네 ...
     */
-	let url = "";
-	if(stockKind === "KOSPI") {
-		url = "https://kind.krx.co.kr/corpgeneral/corpList.do?method=download&pageIndex=1&currentPageSize=5000&orderMode=3&orderStat=D&marketType=stockMkt&searchType=13&fiscalYearEnd=all&location=all"
-		
-	}else if(stockKind === "KOSDAQ") {
-		url = "https://kind.krx.co.kr/corpgeneral/corpList.do?method=download&pageIndex=1&currentPageSize=5000&orderMode=3&orderStat=D&marketType=kosdaqMkt&searchType=13&fiscalYearEnd=all&location=all"
-		
-	}
+	let url = "https://kind.krx.co.kr/corpgeneral/corpList.do?method=download&pageIndex=1&currentPageSize=5000&orderMode=3&orderStat=D&searchType=13&fiscalYearEnd=all&location=all";
+	
 	
     const response = await axios.get(url,{responseEncoding : 'binary', responseType : 'arraybuffer'});
 	
@@ -63,7 +60,8 @@ const crawler  = async (stockKind) => {
 
       /*전체 */
 
-      let stocksListQuery = `SELECT a.stock_code, a.company_name FROM stocks_info a WHERE a.stock_kind = '${stockKind}' AND a.del_yn = 'N' ORDER BY stock_code`;
+      let stocksListQuery = `SELECT a.stock_code, a.company_name FROM stocks_info a WHERE a.del_yn = 'N' ORDER BY stock_code`;
+
       connection.query(stocksListQuery, function (err, results, field) {
         if (err) {
           console.log(err);
@@ -171,5 +169,4 @@ const crawler  = async (stockKind) => {
   
 };
 
-//crawler("KOSPI");
-crawler("KOSDAQ");
+crawler();
