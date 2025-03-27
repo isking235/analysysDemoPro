@@ -61,7 +61,7 @@ const crawler  = async (stockKind) => {
 
       /*전체 */
 
-      let stocksListQuery = `SELECT a.stock_code, a.company_name FROM stocks_info a WHERE a.del_yn = 'N' ORDER BY stock_code`;
+      let stocksListQuery = `SELECT a.stock_code, a.cmpny_nm FROM stock_info a WHERE a.delete_yn = 'N' ORDER BY stock_code`;
 
       connection.query(stocksListQuery, function (err, results, field) {
         if (err) {
@@ -74,7 +74,7 @@ const crawler  = async (stockKind) => {
           scrapedData[0] = {company : zzzz, comNum : 00112, comKind : 부동산 임대}
 
          2) DB목록 호출함
-         stocksListQuery [0] = {company_name : zzzz, stock_code : 00112}
+         stocksListQuery [0] = {cmpny_nm : zzzz, stock_code : 00112}
 
         2.KOSPI 종목을 순회 한다.
          1) KOSPI 종목이 DB 목록에 있는지 체크
@@ -84,7 +84,7 @@ const crawler  = async (stockKind) => {
         3.DB 목록을 순회한다.
           1) DB종목이 KOSPI 종목에 있는지 체크
           2) 있으면 지나감
-          3) 없으면 DEL_YN = 'Y'로 변경
+          3) 없으면 delete_yn = 'Y'로 변경
         * */
 
         console.log("scrapedData:"+scrapedData.length);
@@ -113,7 +113,7 @@ const crawler  = async (stockKind) => {
           //일치한 경우가 없었다면 해당 코드는 db입력하자.
           if(!insertCheck) {
             console.log("입력대상 찾았다.=>"+comNum);
-            let insertQuery = `INSERT INTO stocks_info (stock_kind, stock_code, company_name, reg_dtm, regr_id, mod_dtm, modr_id, del_yn) VALUES('${stockKind}','${scrapedData[i].comNum}','${scrapedData[i].company}', NOW(),'LSH',NOW(), 'LSH','N')`;
+            let insertQuery = `INSERT INTO stock_info (stock_knd, stock_code, cmpny_nm, reg_dtm, regr_id, mod_dtm, modr_id, delete_yn) VALUES('${stockKind}','${scrapedData[i].comNum}','${scrapedData[i].company}', NOW(),'LSH',NOW(), 'LSH','N')`;
             connection.query(insertQuery, function (err, results, fields) { // testQuery 실행
               if (err) {
                 console.log(err);
@@ -143,10 +143,10 @@ const crawler  = async (stockKind) => {
             }
           }
 
-          //일치한 경우가 없었다면 Del_yn을 'Y'로 수정하자.
+          //일치한 경우가 없었다면 delete_yn을 'Y'로 수정하자.
           if(!updateCheck) {
             console.log("삭제 대상=>"+stockCode);
-            let updateQuery = `UPDATE stocks_info SET DEL_YN = 'Y', MOD_DTM = NOW() WHERE stock_code = '${stockCode}'`;
+            let updateQuery = `UPDATE stock_info SET delete_yn = 'Y', MOD_DTM = NOW() WHERE stock_code = '${stockCode}'`;
             connection.query(updateQuery, function (err, results, fields) { // testQuery 실행
               if (err) {
                 console.log(err);

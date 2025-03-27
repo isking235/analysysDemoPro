@@ -37,7 +37,7 @@ const opinionLoad = async (stockCode) => {
     connection.connect();   // DB 접속
 
     let startTime;
-    let maxStockDateQuery = `SELECT MAX(A.stock_date) AS max_stock_date FROM stock_price_information A WHERE A.stock_code = '${stockCode}'`;
+    let maxStockDateQuery = `SELECT MAX(A.delng_de) AS max_delng_de FROM stkpc_info A WHERE A.stock_code = '${stockCode}'`;
     console.log("maxStockDateQuery:" + maxStockDateQuery);
 
 
@@ -46,9 +46,9 @@ const opinionLoad = async (stockCode) => {
             console.log(err);
         }
         //날짜값이 있는지 확인 한다.
-        if (_.isDate(results[0].max_stock_date)) {
-            let maxAftterOneDay = results[0].max_stock_date;
-            maxAftterOneDay.setDate(results[0].max_stock_date.getDate() + 1);
+        if (_.isDate(results[0].max_delng_de)) {
+            let maxAftterOneDay = results[0].max_delng_de;
+            maxAftterOneDay.setDate(results[0].max_delng_de.getDate() + 1);
             startTime = moment(maxAftterOneDay).format("YYYYMMDD");
 
         } else {
@@ -117,7 +117,7 @@ const opinionLoad = async (stockCode) => {
                 values[i].splice(0, 0, todayDateTime, 'lsh', todayDateTime, 'lsh', stockCode);
             });
 
-            let insertQuery = "INSERT INTO stock.stock_price_information (reg_dtm,regr_id,mod_dtm,modr_id,stock_code, stock_date, market_price, high_price, low_price, closing_price, trading_volume,foreign_burnout_rate) values ?;";
+            let insertQuery = "INSERT INTO stock.stkpc_info (reg_dtm,regr_id,mod_dtm,modr_id,stock_code, delng_de, mktc, hghpc, lprc, clsrc, delng_qy,frgnr_exhs_rt) values ?;";
             const query_str = connection.query(insertQuery, [values], (err, result) => {
                 if (err) {
                     console.log(err);
@@ -155,18 +155,18 @@ const crawlerSise  = () => {
     connection.connect();   // DB 접속
 
     /*쿼리 생성 한다.*/
-    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code in ('270870','067990','033500','141000');";
-    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code IN ('005930','005380','005490') ORDER BY stock_code";
-    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code IN ('000040') ORDER BY stock_code";
-    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE DEL_YN='N' AND stock_code >= '343510' ORDER BY stock_code";
-    let testQuery = "SELECT DISTINCT A.stock_code, A.company_name \n" +
-                    "FROM stocks_info A \n" +
+    //let testQuery = "SELECT stock_code, cmpny_nm FROM stock_info WHERE stock_code in ('270870','067990','033500','141000');";
+    //let testQuery = "SELECT stock_code, cmpny_nm FROM stock_info WHERE stock_code IN ('005930','005380','005490') ORDER BY stock_code";
+    //let testQuery = "SELECT stock_code, cmpny_nm FROM stock_info WHERE stock_code IN ('000040') ORDER BY stock_code";
+    //let testQuery = "SELECT stock_code, cmpny_nm FROM stock_info WHERE delete_yn='N' AND stock_code >= '343510' ORDER BY stock_code";
+    let testQuery = "SELECT DISTINCT A.stock_code, A.cmpny_nm \n" +
+                    "FROM stock_info A \n" +
                     "LEFT JOIN ( \n" +
                     "    SELECT DISTINCT stock_code  \n" +
-                    "    FROM stock_price_information \n" +
+                    "    FROM stkpc_info \n" +
                     "    WHERE reg_dtm > CURDATE() \n" +
                     ") z ON A.stock_code = z.stock_code \n" +
-                    "WHERE A.DEL_YN = 'N' AND z.stock_code IS NULL \n" +
+                    "WHERE A.delete_yn = 'N' AND z.stock_code IS NULL \n" +
                     "ORDER BY A.stock_code";
 
     let intever = 2000;

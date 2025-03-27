@@ -54,7 +54,7 @@ const crawler  = async () => {
       for(var key in scrapedData) {
 
         //console.log(scrapedData[key].company);
-        testQuery += `INSERT INTO stocks_info (stock_kind, stock_code, company_name, reg_dtm, regr_id, mod_dtm, modr_id) VALUES('${stockKind}','${scrapedData[key].comNum}','${scrapedData[key].company}', NOW(),'LSH',NOW(), 'LSH');`;
+        testQuery += `INSERT INTO stock_info (stock_knd, stock_code, cmpny_nm, reg_dtm, regr_id, mod_dtm, modr_id) VALUES('${stockKind}','${scrapedData[key].comNum}','${scrapedData[key].company}', NOW(),'LSH',NOW(), 'LSH');`;
 
         
       }

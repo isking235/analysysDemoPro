@@ -81,7 +81,7 @@ const opinionLoad = async(stockCode) => {
 
         /*[CSR001]_종목별 최신을 읽어와 이후 종목 의견만 받아온다*/
         let maxOpinionDate = '';
-        let maxOpinionDateQuery = `SELECT MAX(A.opinion_date) AS max_opinion_date FROM opinion_target_price A WHERE A.stock_code = '${stockCode}'`;
+        let maxOpinionDateQuery = `SELECT MAX(A.opinion_de) AS max_opinion_de FROM invt_opinion_goal_stkpc A WHERE A.stock_code = '${stockCode}'`;
 
         connection.query(maxOpinionDateQuery, function(err, results, field) {
             if (err) {
@@ -89,11 +89,11 @@ const opinionLoad = async(stockCode) => {
             }
 
             for(key in results) {
-                if(results[key].max_opinion_date !== null) {
-                    if(_.isDate(results[key].max_opinion_date)) {
-                        maxOpinionDate = dateFormat(results[key].max_opinion_date);
+                if(results[key].max_opinion_de !== null) {
+                    if(_.isDate(results[key].max_opinion_de)) {
+                        maxOpinionDate = dateFormat(results[key].max_opinion_de);
                     }else {
-                        maxOpinionDate = results[key].max_opinion_date;
+                        maxOpinionDate = results[key].max_opinion_de;
                     }
 
                 }
@@ -108,7 +108,7 @@ const opinionLoad = async(stockCode) => {
             for(key in list) {
                 if(list[key].TRD_DT > maxOpinionDate) {
                     //console.log(list[key].TRD_DT);
-                    insertQuery = `INSERT INTO stock.opinion_target_price (reg_dtm,regr_id,mod_dtm,modr_id,stock_code, opinion_date, investment_opinion, target_price, revised_stock_price)
+                    insertQuery = `INSERT INTO stock.invt_opinion_goal_stkpc (reg_dtm,regr_id,mod_dtm,modr_id,stock_code, opinion_de, invt_opinion, goal_stkpc, updt_stkpc)
                                     VALUES (NOW(),'LSH',NOW(),'LSH','${stockCode}','${list[key].TRD_DT}','${list[key].VAL1}','${list[key].VAL2}','${list[key].VAL3}');`;
 
                     connection.query(insertQuery, function (err, results, fields) { // insertQuery 실행
@@ -143,15 +143,15 @@ const crawlerOpinion  = () => {
     connection.connect();   // DB 접속
 
     /*쿼리 생성 한다.*/
-    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code in ('000020');";
-    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE DEL_YN='N' ORDER BY stock_code";
-    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code >  '089860'  ORDER BY stock_code";
+    //let testQuery = "SELECT stock_code, cmpny_nm FROM stock_info WHERE stock_code in ('000020');";
+    //let testQuery = "SELECT stock_code, cmpny_nm FROM stock_info WHERE delete_yn='N' ORDER BY stock_code";
+    //let testQuery = "SELECT stock_code, cmpny_nm FROM stock_info WHERE stock_code >  '089860'  ORDER BY stock_code";
     let testQuery = "SELECT \n" +
-        "      stock_code, company_name\n" +
-        "  FROM stocks_info A\n" +
-        " WHERE A.DEL_YN='N'\n" +
+        "      stock_code, cmpny_nm\n" +
+        "  FROM stock_info A\n" +
+        " WHERE A.delete_yn='N'\n" +
         "    AND A.stock_code NOT IN (\n" +
-        "    SELECT distinct Z.stock_code FROM opinion_target_price Z WHERE  Z.reg_dtm > DATE_FORMAT(NOW(),'%Y/%m/%d')\n" +
+        "    SELECT distinct Z.stock_code FROM invt_opinion_goal_stkpc Z WHERE  Z.reg_dtm > DATE_FORMAT(NOW(),'%Y/%m/%d')\n" +
         "    )\n" +
         " ORDER BY A.stock_code;";
     let intever = 2000;

@@ -69,7 +69,7 @@ const crawler  = async (stockKind) => {
 
       /*전체 */
 
-      let stocksListQuery = `SELECT a.stock_code, a.company_name FROM stocks_info a WHERE a.del_yn = 'N' ORDER BY stock_code`;
+      let stocksListQuery = `SELECT a.stock_code, a.cmpny_nm FROM stock_info a WHERE a.delete_yn = 'N' ORDER BY stock_code`;
       connection.query(stocksListQuery, function (err, results, field) {
         if (err) {
           console.log(err);
@@ -81,7 +81,7 @@ const crawler  = async (stockKind) => {
           scrapedData[0] = {company : zzzz, comNum : 00112, comKind : 부동산 임대}
 
          2) DB목록 호출함
-         stocksListQuery [0] = {company_name : zzzz, stock_code : 00112}
+         stocksListQuery [0] = {cmpny_nm : zzzz, stock_code : 00112}
 
         2.종목을 순회 한다.
         1) stockKind 종목이 DB 목록에 있는지 체크
@@ -116,7 +116,7 @@ const crawler  = async (stockKind) => {
           //일치한 경우가 있으면 해당 코드의 종류를 변경하자
           if(updateCheck) {
             console.log("종목 종류 변경 대상 찾았다.=>"+comNum);
-            let updateQuery = `UPDATE stocks_info SET stock_kind = '${stockKind}', modr_id = 'LSH', MOD_DTM = NOW() WHERE stock_code = '${stockCode}'`;
+            let updateQuery = `UPDATE stock_info SET stock_knd = '${stockKind}', modr_id = 'LSH', MOD_DTM = NOW() WHERE stock_code = '${stockCode}'`;
             connection.query(updateQuery, function (err, results, fields) { // testQuery 실행
               if (err) {
                 console.log(err);
