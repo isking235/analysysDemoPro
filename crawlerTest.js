@@ -41,8 +41,8 @@ const crawlerTest  = () => {
     connection.connect();   // DB 접속
 
     /*쿼리 생성 한다.*/
-    //let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code in ('270870','067990','033500','141000');";
-    let testQuery = "SELECT stock_code, company_name FROM stocks_info WHERE stock_code  in ('005930') ORDER BY stock_code";
+    //let testQuery = "SELECT stock_code, cmpny_nm FROM stock_info WHERE stock_code in ('270870','067990','033500','141000');";
+    let testQuery = "SELECT stock_code, cmpny_nm FROM stock_info WHERE stock_code  in ('005930') ORDER BY stock_code";
     let intever = 2000;
     let ms = 0;
     let idx = 0;
