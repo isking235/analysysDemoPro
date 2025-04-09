@@ -2,12 +2,17 @@ const cron = require('node-cron');
 const { exec } = require('child_process');
 
 function executeFile(filename) {
+  console.log(`${filename} 실행`);
   exec(`node ${filename}`, (error, stdout, stderr) => {
     if (error) {
       console.error(`Error executing ${filename}:`, error);
       return;
     }
+    if(stderr){
+      console.error(`Output from ${filename}: ${stderr}`);
+    }
     console.log(`Output from ${filename}:`, stdout);
+    console.log(`${filename} 종료`);
   });
 }
 
