@@ -35,10 +35,7 @@ async function saveUpjongList() {
       console.log(`Upjong Name: ${upjongName}, Link: ${upjongLink}, noMatchNumber: ${noMatchNumber}`);
 
       scheduleStockSiseType(upjongLink, 'upjong', noMatchNumber, index * 1000);
-      saveSiseGroup('upjong', noMatchNumber, upjongName);
-      if(index == 0) {
-        return false;
-      }
+      saveSiseGroup('upjong', noMatchNumber, upjongName);      
     }
   });
 }
