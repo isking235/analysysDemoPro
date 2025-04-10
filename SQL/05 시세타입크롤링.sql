@@ -7,7 +7,7 @@ FROM sise_ty_stdr a
 WHRE a.sise_ty_code = 'upjong' AND a.sise_grp_dtl_no = '200';
 
 -- 상세명이 변경된경우 수정
-UPDATE sise_ty_stdr 
+UPDATE sise_ty_stdr a
 SET sise_grp_dtl_nm = '수정된 상세명',
     a.mod_dtm = NOW(),
     a.modr_id = 'LSH'
