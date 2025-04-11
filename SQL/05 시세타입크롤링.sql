@@ -1,10 +1,29 @@
 /*시세 관련 쿼리*/
 SELECT *
 FROM sise_ty_stdr a;
+
+SELECT *
+FROM sise_ty_stdr a
+WHERE a.sise_ty_code = 'group';
+stock_by_thema_info
+SELECT *
+  FROM stock_info a
+WHERE a.grp_sise_grp_dtl_no = '96';
+
+
+
 /*시세타입기준 중복조회*/
+
+
 SELECT a.sise_grp_dtl_nm
 FROM sise_ty_stdr a
 WHRE a.sise_ty_code = 'upjong' AND a.sise_grp_dtl_no = '200';
+
+
+SELECT COUNT(*) FROM stock_info A WHERE A.grp_sise_grp_dtl_no IS not NULL;
+
+
+
 
 -- 상세명이 변경된경우 수정
 UPDATE sise_ty_stdr a

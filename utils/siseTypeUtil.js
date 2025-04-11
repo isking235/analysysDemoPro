@@ -57,7 +57,7 @@ async function saveStockSiseType(logger, url, siseTyCode, siseGrpDtlNo) {
             WHERE stock_code = ?`,
           [siseGrpDtlNo, stockCode]
         );
-        logger.debug(`종목 업데이트 성공: ${stockName} (${stockCode})`);
+        logger.debug(`종목 업종 업데이트 성공: ${stockName} (${stockCode})`);
       } 
       else if (_.isEqual(siseTyCode, 'group')) {
         await pool.query(
@@ -66,7 +66,29 @@ async function saveStockSiseType(logger, url, siseTyCode, siseGrpDtlNo) {
             WHERE stock_code = ?`,
           [siseGrpDtlNo, stockCode]
         );
-        logger.debug(`종목 업데이트 성공: ${stockName} (${stockCode})`);
+        logger.debug(`종목 그룹 업데이트 성공: ${stockName} (${stockCode})`);
+      }
+      else if (_.isEqual(siseTyCode, 'theme')) { //테마인경우 insert 한다.
+        try{
+          await pool.query(
+            `INSERT INTO stock_by_thema_info (
+                reg_dtm, regr_id, mod_dtm, modr_id,
+                stock_code, sise_ty_code, ty_dtl_no
+            ) VALUES (
+                NOW(), 'LSH', NOW(), 'LSH',
+                ?, ?, ?
+            )`,
+            [stockCode, 'theme', siseGrpDtlNo]
+          );
+        }catch (err) {
+          if (err.code === 'ER_DUP_ENTRY') {
+            console.warn('Duplicate entry detected. Skipping...');
+          } else {
+            console.error('Error during insert:', err.message);
+            throw err; // 다른 오류는 재발생시킴
+          }
+        }
+        logger.debug(`종목 테마 입력 성공: ${stockName} (${stockCode})`);
       }
     }
   });

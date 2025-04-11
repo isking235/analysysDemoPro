@@ -19,7 +19,7 @@ const logger = createLogger(__filename);
 
 async function saveGroupList(page) {
   logger.info(`saveGroupList()`);
-  const url = process.env.SISE_GROUP_URL;//https://finance.naver.com/sise/sise_group.naver?type=group
+  const url = process.env.SISE_GROUP_URL;
   logger.info(`Target URL: ${url}`);
 
   const response = await axios.get(url, { responseType: 'arraybuffer', httpsAgent: agent });

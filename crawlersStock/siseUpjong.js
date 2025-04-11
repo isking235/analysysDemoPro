@@ -19,7 +19,7 @@ const logger = createLogger(__filename);
 async function saveUpjongList() {
   logger.info(`saveUpjongList()`);
   
-    const url = process.env.SISE_UPJONG_URL; //https://finance.naver.com/sise/sise_group.naver?type=upjong
+    const url = process.env.SISE_UPJONG_URL;
     logger.info(`Target URL: ${url}`);
 
     const response = await axios.get(url, { responseType: 'arraybuffer', httpsAgent: agent });

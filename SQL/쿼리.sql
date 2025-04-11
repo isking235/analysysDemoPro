@@ -13,6 +13,8 @@ WHERE a.mod_dtm >= DATE_ADD(NOW(), INTERVAL-2 MINUTE);
 SELECT * FROM invt_opinion_goal_stkpc a
 WHERE a.stock_code = '000020';
 
+SELECT * FROM cmmn_code_dtl;
+
 
 
 SELECT *
