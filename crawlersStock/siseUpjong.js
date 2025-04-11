@@ -28,6 +28,9 @@ async function saveUpjongList() {
 
     //크롤링 대상 테이블 지정 및 순회 하면서 저장
     const upjongTable = $('.type_1');
+    const promises = []; // 프로미스를 저장할 배열 생성
+
+
     upjongTable.find('a').each((index, element) => {
       const aTag = $(element);
       const upjongName = aTag.text();
@@ -47,7 +50,7 @@ async function saveUpjongList() {
         
       }
 
-      if(index ===0){
+      if(index ===1){
         return false;
       }
     });
@@ -63,7 +66,3 @@ async function saveUpjongList() {
   await saveUpjongList(); // 비동기 함수 실행
   logger.info('saveUpjongList execution finished.');
 })();
-
-process.on('beforeExit', (code) => {
-  logger.info(`Process exited with code ${code}`);
-});
