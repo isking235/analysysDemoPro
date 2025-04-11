@@ -1,5 +1,5 @@
 SELECT * FROM stock_info a
-WHERE a.stock_code = '224810';
+WHERE a.stock_code = '208850';
 
 SELECT COUNT(*) FROM stock_info a
 WHERE a.induty_sise_grp_dtl_no IS NULL and a.delete_yn = 'N';
@@ -8,7 +8,7 @@ SELECT * FROM stock_info a
 WHERE a.induty_sise_grp_dtl_no IS NULL and a.delete_yn = 'N';
 
 SELECT a.* FROM stock_info a
-WHERE a.mod_dtm >= DATE_ADD(NOW(), INTERVAL-1 hour);
+WHERE a.mod_dtm >= DATE_ADD(NOW(), INTERVAL-2 MINUTE);
 
 SELECT * FROM invt_opinion_goal_stkpc a
 WHERE a.stock_code = '000020';

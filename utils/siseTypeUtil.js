@@ -2,11 +2,10 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const https = require('https');
 const iconv = require('iconv-lite');
-const { pool } = require('../config/db'); // ✅ pool 추가 임포트
-
-require('dotenv').config();
+const { pool } = require('../config/db'); //pool 추가 임포트
 const _ = require('lodash');
 
+require('dotenv').config();
 const agent = new https.Agent({
   rejectUnauthorized: false,
 });
@@ -14,16 +13,16 @@ const agent = new https.Agent({
 /**
  * 특정 URL에 대해 일정 시간 후 실행
  */
-function scheduleStockSiseType(url, sisteType, siseGrpDtlNo, delay) {
+async function scheduleStockSiseType(logger, url, sisteType, siseGrpDtlNo, delay) {
+  logger.info(`saveUpjongList() url:${url}, sisteType:${sisteType}, siseGrpDtlNo:${siseGrpDtlNo}`);  
   setTimeout(async () => {
     try {
-      await saveStockSiseType(url, sisteType, siseGrpDtlNo);
+      await saveStockSiseType(logger, url, sisteType, siseGrpDtlNo);
     } catch (error) {
-      console.error(`Error processing URL ${url}:`, error);
+      logger.error(`Error processing URL ${url}:`, error);
     }
   }, delay);
 }
-
 
 /**
  * 종목의 시세 타입을 저장
@@ -31,10 +30,10 @@ function scheduleStockSiseType(url, sisteType, siseGrpDtlNo, delay) {
  * @param {*} siseTyCode 
  * @param {*} siseGrpDtlNo 
  */
-async function saveStockSiseType(url, siseTyCode, siseGrpDtlNo) {
+async function saveStockSiseType(logger, url, siseTyCode, siseGrpDtlNo) {
   try {
     const stockListUrl = process.env.SISE_DOMAIN + url;
-    console.log(stockListUrl);
+    logger.debug(stockListUrl);
 
     const response = await axios.get(stockListUrl, { responseType: 'arraybuffer', httpsAgent: agent });
     const content = iconv.decode(response.data, 'EUC-KR');
@@ -50,7 +49,7 @@ async function saveStockSiseType(url, siseTyCode, siseGrpDtlNo) {
         const noMatch = stockLink.match(/code=(\d+)/);
         const stockCode = noMatch ? noMatch[1] : null;
 
-        console.log(`Stock Name: ${stockName}, Link: ${stockLink}, Code: ${stockCode}`);
+        logger.debug(`Stock Name: ${stockName}, Link: ${stockLink}, Code: ${stockCode}`);
 
         if (_.isEqual(siseTyCode, 'upjong')) {
           await pool.query(
@@ -59,7 +58,7 @@ async function saveStockSiseType(url, siseTyCode, siseGrpDtlNo) {
              WHERE stock_code = ?`,
             [siseGrpDtlNo, stockCode]
           );
-          console.log(`종목 업데이트 성공: ${stockName} (${stockCode})`);
+          logger.debug(`종목 업데이트 성공: ${stockName} (${stockCode})`);
         } 
         else if (_.isEqual(siseTyCode, 'group')) {
           await pool.query(
@@ -68,14 +67,14 @@ async function saveStockSiseType(url, siseTyCode, siseGrpDtlNo) {
              WHERE stock_code = ?`,
             [siseGrpDtlNo, stockCode]
           );
-          console.log(`종목 업데이트 성공: ${stockName} (${stockCode})`);
+          logger.debug(`종목 업데이트 성공: ${stockName} (${stockCode})`);
         }
       }
     });
 
-    console.log(`종목 저장 완료: 업종=${siseTyCode}, 번호=${siseGrpDtlNo}`);
+    logger.debug(`종목 저장 완료: 업종=${siseTyCode}, 번호=${siseGrpDtlNo}`);
   } catch (error) {
-    console.error('saveStockSiseType Error:', error);
+    logger.debug('saveStockSiseType Error:', error);
   }
 }
 
@@ -85,7 +84,7 @@ async function saveStockSiseType(url, siseTyCode, siseGrpDtlNo) {
  * @param {*} siseGrpDtlNo 
  * @param {*} siseGrpDtlNm 
  */
-async function saveSiseGroup(siseTyCode, siseGrpDtlNo, siseGrpDtlNm) {
+async function saveSiseGroup(logger, siseTyCode, siseGrpDtlNo, siseGrpDtlNm) {
   try {
     const [results] = await pool.query(
       `SELECT a.sise_grp_dtl_nm  
@@ -105,7 +104,7 @@ async function saveSiseGroup(siseTyCode, siseGrpDtlNo, siseGrpDtlNm) {
          )`,
         [siseTyCode, siseGrpDtlNo, siseGrpDtlNm]
       );
-      console.log(`시세 입력 성공: 시세타입=${siseTyCode}, 시세=${siseGrpDtlNm}, 번호=${siseGrpDtlNo}`);
+      logger.debug(`시세 입력 성공: 시세타입=${siseTyCode}, 시세=${siseGrpDtlNm}, 번호=${siseGrpDtlNo}`);
     } else {
       for (const key in results) {
         if (
@@ -118,12 +117,12 @@ async function saveSiseGroup(siseTyCode, siseGrpDtlNo, siseGrpDtlNm) {
              WHERE sise_ty_code = ? AND sise_grp_dtl_no = ?`,
             [siseGrpDtlNm, siseTyCode, siseGrpDtlNo]
           );
-          console.log(`시세 이름 업데이트 성공: 시세타입=${siseTyCode}, 시세=${siseGrpDtlNm}, 번호=${siseGrpDtlNo}`);
+          logger.debug(`시세 이름 업데이트 성공: 시세타입=${siseTyCode}, 시세=${siseGrpDtlNm}, 번호=${siseGrpDtlNo}`);
         }
       }
     }
   } catch (error) {
-    console.error('saveSiseGroup Error:', error);
+    logger.error('saveSiseGroup Error:', error);
   }
 }
 
