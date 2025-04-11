@@ -18,7 +18,7 @@ const logger = createLogger(__filename);
  */
 async function saveUpjongList() {
   logger.info(`saveUpjongList()`);
-  try {
+  
     const url = process.env.SISE_UPJONG_URL; //https://finance.naver.com/sise/sise_group.naver?type=upjong
     logger.info(`Target URL: ${url}`);
 
@@ -49,20 +49,7 @@ async function saveUpjongList() {
         saveSiseGroup(logger,'upjong', siseGrpDtlNo, upjongName);
         
       }
-
-      if(index ===1){
-        return false;
-      }
     });
     logger.info('saveUpjongList completed successfully.');
-  }catch (error) {
-    logger.error(`Error in saveUpjongList: ${error.message}`);
-  }
 }
-
-// 함수 실행 및 종료 로그 추가
-(async () => {
-  logger.info('Starting saveUpjongList...');
-  await saveUpjongList(); // 비동기 함수 실행
-  logger.info('saveUpjongList execution finished.');
-})();
+saveUpjongList(); // 비동기 함수 실행
