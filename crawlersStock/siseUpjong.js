@@ -2,9 +2,9 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const https = require('https');
 const iconv = require('iconv-lite');
-const _ = require('lodash');
-const { pool } = require('../config/db'); // pool 추가 임포트
-const {scheduleStockSiseType, saveSiseGroup} = require('../utils/siseTypeUtil');
+
+//const createLogger = require('../config/logger'); // config/logger.js에서 로거 가져
+const {scheduleStockSiseType, saveSiseGroup} = require('../utils/siseTypeUtil'); 
 
 require('dotenv').config();
 
@@ -12,13 +12,17 @@ const agent = new https.Agent({
   rejectUnauthorized: false,
 });
 
+//const logger = createLogger('crawlerSiseUpjong.log');
+
 /**
  * 업종 목록을 조회하고 저장
  */
 async function saveUpjongList() {
 
   //업종 URL 호출
+  //logger.info('Starting crawlerSiseUpjong.js crawling...');
   const url = process.env.SISE_UPJONG_URL; //https://finance.naver.com/sise/sise_group.naver?type=upjong
+  //logger.debug(url);
   console.log(url);
 
   const response = await axios.get(url, { responseType: 'arraybuffer', httpsAgent: agent });
@@ -44,7 +48,7 @@ async function saveUpjongList() {
       //시세 타입을 시세타입기준테이블에 입력한다.
       saveSiseGroup('upjong', siseGrpDtlNo, upjongName);
 
-      if(index ==0){
+      if(index==0) {
         return false;
       }
     }
@@ -52,4 +56,5 @@ async function saveUpjongList() {
 }
 
 // 실행
+
 saveUpjongList();
