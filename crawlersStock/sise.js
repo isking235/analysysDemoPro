@@ -10,7 +10,7 @@ const axios = require('axios');
 const mysql = require('mysql');  // mysql 모듈 로드
 const moment = require('moment');
 const _ = require('lodash');
-const createLogger = require('./config/logger'); // config/logger.js에서 로거 가져
+const createLogger = require('../config/logger'); // config/logger.js에서 로거 가져
 const logger = createLogger(__filename, false); //2번째 인자가 false로 주어지면 화면출력을 하지 않는다. 스케쥴링에서 실행시 1MB이상 메모리를 먹는 관계로 필요할듯
 
 require('dotenv').config();

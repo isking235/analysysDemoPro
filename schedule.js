@@ -18,22 +18,22 @@ function executeFile(filename) {
 
 //투자의견, 목표 주가 의견을 수집
 cron.schedule('00 11 * * *', () => {
- executeFile('crawlerOpinion.js');
+ executeFile('./crawlersStock/opinion.js');
 });
 
 //시세 수집
 cron.schedule('01 11 * * *', () => {
-  executeFile('crawlerSise.js');
+  executeFile('./crawlersStock/sise.js');
 });
 
 //주가 종목 수집
 cron.schedule('30 11 * * *', () => {
-  executeFile('crawler.js');
+  executeFile('./crawlersStock/stockList.js');
 });
 
 //종목당 타입 수집
 cron.schedule('35 11 * * *', () => {
-  executeFile('crawlerTypeModify.js');
+  executeFile('./crawlersStock/typeModify.js');
 });
 
 

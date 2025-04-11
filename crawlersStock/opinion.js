@@ -11,7 +11,7 @@ const axios = require('axios');
 const mysql = require('mysql');
 const moment = require("moment");  // mysql 모듈 로드
 const _ = require('lodash');
-const createLogger = require('./config/logger'); // config/logger.js에서 로거 가져
+const createLogger = require('../config/logger'); // config/logger.js에서 로거 가져
 const logger = createLogger(__filename);
 require('dotenv').config();
 

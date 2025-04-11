@@ -4,7 +4,7 @@ const iconv = require('iconv-lite');
 const mysql = require('mysql');  // mysql 모듈 로드
 require('dotenv').config();
 const _ = require('lodash');
-const createLogger = require('./config/logger'); // config/logger.js에서 로거 가져
+const createLogger = require('../config/logger'); // config/logger.js에서 로거 가져
 const logger = createLogger(__filename);
 
 const conn = {  // mysql 접속 설정
@@ -23,10 +23,11 @@ const conn = {  // mysql 접속 설정
 45
 * */
 const crawler  = async (stockKind) => {
-    logger.info("crawler.js stock start");
+    logger.info("stockList.js stock start");
     
   /**********************************************************
-    1. 주식종목 url을 호출한다
+
+  1. 주식종목 url을 호출한다
     2. 항목을 cheerio로 파싱한다.
 
     *********************************************************/ 
