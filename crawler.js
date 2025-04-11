@@ -4,6 +4,8 @@ const iconv = require('iconv-lite');
 const mysql = require('mysql');  // mysql 모듈 로드
 require('dotenv').config();
 const _ = require('lodash');
+const createLogger = require('./config/logger'); // config/logger.js에서 로거 가져
+const logger = createLogger(__filename);
 
 const conn = {  // mysql 접속 설정
     host: process.env.DB_HOST,
@@ -21,6 +23,7 @@ const conn = {  // mysql 접속 설정
 45
 * */
 const crawler  = async (stockKind) => {
+    logger.info("crawler.js stock start");
     
   /**********************************************************
     1. 주식종목 url을 호출한다
@@ -44,8 +47,8 @@ const crawler  = async (stockKind) => {
      
       const scrapedData = [];
       $("body > table > tbody > tr").each((index, element) => {
-        //console.log($(element).find("td")[0]); // 이상하게 긴 내용이 출력됨
-        //console.log($($(element).find("td")[0]).text());
+        //logger.debug($(element).find("td")[0]); // 이상하게 긴 내용이 출력됨
+        //logger.debug($($(element).find("td")[0]).text());
 
         const tds = $(element).find("td");
         const company = $(tds[0]).text().trim();
@@ -65,7 +68,7 @@ const crawler  = async (stockKind) => {
 
       connection.query(stocksListQuery, function (err, results, field) {
         if (err) {
-          console.log(err);
+          logger.error(err);
         }
 
         /*
@@ -87,8 +90,8 @@ const crawler  = async (stockKind) => {
           3) 없으면 delete_yn = 'Y'로 변경
         * */
 
-        console.log("scrapedData:"+scrapedData.length);
-        console.log("results:"+results.length);
+        logger.debug("scrapedData:"+scrapedData.length);
+        logger.debug("results:"+results.length);
 
         let comNum = "";
         let stockCode = "";
@@ -105,26 +108,26 @@ const crawler  = async (stockKind) => {
           for(let j=0; j < results.length ; j ++ ) {
             stockCode =results[j].stock_code;
             if(stockCode === comNum){
-              //console.log("일치 찾았다=>"+stockCode);
+              //logger.debug("일치 찾았다=>"+stockCode);
               insertCheck = true;
               break;
             }
           }
           //일치한 경우가 없었다면 해당 코드는 db입력하자.
           if(!insertCheck) {
-            console.log("입력대상 찾았다.=>"+comNum);
+            logger.debug("입력대상 찾았다.=>"+comNum);
             let insertQuery = `INSERT INTO stock_info (stock_knd, stock_code, cmpny_nm, reg_dtm, regr_id, mod_dtm, modr_id, delete_yn) VALUES('${stockKind}','${scrapedData[i].comNum}','${scrapedData[i].company}', NOW(),'LSH',NOW(), 'LSH','N')`;
             connection.query(insertQuery, function (err, results, fields) { // testQuery 실행
               if (err) {
-                console.log(err);
+                logger.error(err);
               }
-              console.log(results);
+              logger.debug(results);
 
             });
           }
 
           insertCheck = false;
-          //console.log(i+"_"+comNum);
+          //logger.debug(i+"_"+comNum);
         }
 
 
@@ -137,7 +140,7 @@ const crawler  = async (stockKind) => {
           for(let j=0; j < scrapedData.length ; j ++ ) {
             comNum = scrapedData[j].comNum;
             if(stockCode === comNum){
-              //console.log("삭제 안할 놈 찾았다=>"+comNum);
+              //logger.debug("삭제 안할 놈 찾았다=>"+comNum);
               updateCheck = true;
               break;
             }
@@ -145,13 +148,13 @@ const crawler  = async (stockKind) => {
 
           //일치한 경우가 없었다면 delete_yn을 'Y'로 수정하자.
           if(!updateCheck) {
-            console.log("삭제 대상=>"+stockCode);
+            logger.debug("삭제 대상=>"+stockCode);
             let updateQuery = `UPDATE stock_info SET delete_yn = 'Y', MOD_DTM = NOW() WHERE stock_code = '${stockCode}'`;
             connection.query(updateQuery, function (err, results, fields) { // testQuery 실행
               if (err) {
-                console.log(err);
+                logger.error(err);
               }
-              console.log(results);
+              logger.debug(results);
 
             });
           }
@@ -162,7 +165,7 @@ const crawler  = async (stockKind) => {
 
       });
 
-      console.log("lsh : 입력 종료"+stockKind);
+      logger.debug("lsh : 입력 종료"+stockKind);
       
       
     }

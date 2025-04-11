@@ -4,6 +4,8 @@ const iconv = require('iconv-lite');
 const mysql = require('mysql');  // mysql 모듈 로드
 require('dotenv').config();
 const _ = require('lodash');
+const createLogger = require('./config/logger'); // config/logger.js에서 로거 가져
+const logger = createLogger(__filename);
 
 const conn = {  // mysql 접속 설정
     host: process.env.DB_HOST,
@@ -20,6 +22,7 @@ const conn = {  // mysql 접속 설정
 * */
 const crawler  = async (stockKind) => {
     
+  logger.info(`crawlerTypeModify.js start :${stockKind}`);
   /**********************************************************
     1. 주식종목 url을 호출한다
     2. 항목을 cheerio로 파싱한다.
@@ -52,8 +55,8 @@ const crawler  = async (stockKind) => {
      
       const scrapedData = [];
       $("body > table > tbody > tr").each((index, element) => {
-        //console.log($(element).find("td")[0]); // 이상하게 긴 내용이 출력됨
-        //console.log($($(element).find("td")[0]).text());
+        //logger.debug($(element).find("td")[0]); // 이상하게 긴 내용이 출력됨
+        //logger.debug($($(element).find("td")[0]).text());
 
         const tds = $(element).find("td");
         const company = $(tds[0]).text().trim();
@@ -72,7 +75,7 @@ const crawler  = async (stockKind) => {
       let stocksListQuery = `SELECT a.stock_code, a.cmpny_nm FROM stock_info a WHERE a.delete_yn = 'N' ORDER BY stock_code`;
       connection.query(stocksListQuery, function (err, results, field) {
         if (err) {
-          console.log(err);
+          logger.error(err);
         }
 
         /*
@@ -90,8 +93,8 @@ const crawler  = async (stockKind) => {
 
         * */
 
-        console.log("scrapedData:"+scrapedData.length);
-        console.log("results:"+results.length);
+        logger.debug("scrapedData:"+scrapedData.length);
+        logger.debug("results:"+results.length);
 
         let comNum = "";
         let stockCode = "";
@@ -108,25 +111,25 @@ const crawler  = async (stockKind) => {
           for(let j=0; j < results.length ; j ++ ) {
             stockCode =results[j].stock_code;
             if(stockCode === comNum){
-              //console.log("일치 찾았다=>"+stockCode);
+              //logger.debug("일치 찾았다=>"+stockCode);
               updateCheck = true;
               break;
             }
           }
           //일치한 경우가 있으면 해당 코드의 종류를 변경하자
           if(updateCheck) {
-            console.log("종목 종류 변경 대상 찾았다.=>"+comNum);
+            logger.debug("종목 종류 변경 대상 찾았다.=>"+comNum);
             let updateQuery = `UPDATE stock_info SET stock_knd = '${stockKind}', modr_id = 'LSH', MOD_DTM = NOW() WHERE stock_code = '${stockCode}'`;
             connection.query(updateQuery, function (err, results, fields) { // testQuery 실행
               if (err) {
-                console.log(err);
+                logger.error(err);
               }
-              console.log(results);
+              logger.debug(results);
 
             });
           }
 
-          //console.log(i+"_"+comNum);
+          //logger.debug(i+"_"+comNum);
         }
 
 
@@ -136,7 +139,7 @@ const crawler  = async (stockKind) => {
 
       });
 
-      console.log("lsh : 수정 종료"+stockKind);
+      logger.debug("lsh : 수정 종료"+stockKind);
       
       
     }

@@ -11,10 +11,10 @@ const axios = require('axios');
 const mysql = require('mysql');
 const moment = require("moment");  // mysql 모듈 로드
 const _ = require('lodash');
-const createLogger = require('../config/logger'); // config/logger.js에서 로거 가져
-
-require('dotenv').config();
+const createLogger = require('./config/logger'); // config/logger.js에서 로거 가져
 const logger = createLogger(__filename);
+require('dotenv').config();
+
 
 
 const conn = {  // mysql 접속 설정
@@ -66,7 +66,7 @@ function dateFormat(date) {
 const opinionLoad = async(stockCode) => {
 
     let opinionUrl = `http://m.comp.fnguide.com/m2/data/json/chart/01_02/chart_A${stockCode}.json`;
-    console.log("opinionLoad.opinionUrl :"+ opinionUrl);
+    logger.debug("opinionLoad.opinionUrl :"+ opinionUrl);
 
 
 
@@ -75,9 +75,9 @@ const opinionLoad = async(stockCode) => {
     if (response.status === 200) {
 
         const opnions = JSON.stringify(response.data, null, 2); //API를 json으로 받아 온다.
-        //console.log(opnions);
+        //logger.debug(opnions);
         const obj = JSON.parse(opnions); //json을 객체화
-        //console.log(obj.CHART);
+        //logger.debug(obj.CHART);
         const list = obj.CHART;
 
         let connection = mysql.createConnection(conn); // DB 커넥션 생성
@@ -89,7 +89,7 @@ const opinionLoad = async(stockCode) => {
 
         connection.query(maxOpinionDateQuery, function(err, results, field) {
             if (err) {
-                console.log(err);
+                logger.error(err);
             }
 
             for(key in results) {
@@ -111,18 +111,18 @@ const opinionLoad = async(stockCode) => {
 
             for(key in list) {
                 if(list[key].TRD_DT > maxOpinionDate) {
-                    //console.log(list[key].TRD_DT);
+                    //logger.debug(list[key].TRD_DT);
                     insertQuery = `INSERT INTO stock.invt_opinion_goal_stkpc (reg_dtm,regr_id,mod_dtm,modr_id,stock_code, opinion_de, invt_opinion, goal_stkpc, updt_stkpc)
                                     VALUES (NOW(),'LSH',NOW(),'LSH','${stockCode}','${list[key].TRD_DT}','${list[key].VAL1}','${list[key].VAL2}','${list[key].VAL3}');`;
 
                     connection.query(insertQuery, function (err, results, fields) { // insertQuery 실행
                         if (err) {
-                            console.log(err);
+                            logger.error(err);
                         }
                     });
                 }
             }
-            console.log("종목 :"+stockCode+" 입력 완료");
+            logger.debug("종목 :"+stockCode+" 입력 완료");
             connection.end();
 
         });
@@ -130,7 +130,7 @@ const opinionLoad = async(stockCode) => {
 };
 
 const runFunction = (resolve,stockCode,t) => {
-    console.log("sleep : "+(t/1000)+"초_stockCode : "+stockCode);
+    logger.debug("sleep : "+(t/1000)+"초_stockCode : "+stockCode);
     opinionLoad(stockCode); //종목코드를 보내준다.
     return resolve;
 }
@@ -141,7 +141,7 @@ function sleep(stockCode, t){
 }
 
 const crawlerOpinion  = () => {
-    console.log("crawlerOpinion start");
+    logger.info("crawlerOpinion start");
     /*DB에 입력 해 보자*/
     let connection = mysql.createConnection(conn); // DB 커넥션 생성
     connection.connect();   // DB 접속
@@ -165,9 +165,9 @@ const crawlerOpinion  = () => {
 
     connection.query(testQuery, function(err, results, field){
         if (err) {
-            console.log(err);
+            logger.error(err);
         }
-        console.log("종목의견 수집대상 갯수: " + results.length);
+        logger.debug("종목의견 수집대상 갯수: " + results.length);
 
         for(key in results) {
             ms = (idx+1)*intever;
@@ -184,4 +184,3 @@ const crawlerOpinion  = () => {
 
 };
 crawlerOpinion();
-console.log("end");
