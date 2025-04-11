@@ -10,7 +10,8 @@ const axios = require('axios');
 const mysql = require('mysql');  // mysql 모듈 로드
 const moment = require('moment');
 const _ = require('lodash');
-
+const createLogger = require('./config/logger'); // config/logger.js에서 로거 가져
+const logger = createLogger(__filename, false); //2번째 인자가 false로 주어지면 화면출력을 하지 않는다. 스케쥴링에서 실행시 1MB이상 메모리를 먹는 관계로 필요할듯
 
 require('dotenv').config();
 
@@ -38,12 +39,12 @@ const opinionLoad = async (stockCode) => {
 
     let startTime;
     let maxStockDateQuery = `SELECT MAX(A.delng_de) AS max_delng_de FROM stkpc_info A WHERE A.stock_code = '${stockCode}'`;
-    console.log("maxStockDateQuery:" + maxStockDateQuery);
+    logger.debug("maxStockDateQuery:" + maxStockDateQuery);
 
 
     connection.query(maxStockDateQuery, async function (err, results, field) {
         if (err) {
-            console.log(err);
+            logger.error(err);
         }
         //날짜값이 있는지 확인 한다.
         if (_.isDate(results[0].max_delng_de)) {
@@ -55,11 +56,11 @@ const opinionLoad = async (stockCode) => {
             startTime = moment("1990-01-01", "YYYY-MM-DD").format("YYYYMMDD");
         }
 
-        console.log("maxStockDate:" + startTime);
+        logger.debug("maxStockDate:" + startTime);
 
         //금일날짜가 최신 날짜와 같거나 미래이면 수행 하지 않고 끝낸다.
         if (todayString == startTime) {
-            console.log("수행할게 없습니다.\n");
+            logger.debug("수행할게 없습니다.\n");
             connection.end();
             return null;
         }
@@ -68,7 +69,7 @@ const opinionLoad = async (stockCode) => {
             2.시세를 조회한다.
          */
         const siseUrl = `https://api.finance.naver.com/siseJson.naver?symbol=${stockCode}&requestType=1&startTime=${startTime}&endTime=${todayString}&timeframe=day`;
-        console.log("siseUrl:" + siseUrl);
+        logger.debug("siseUrl:" + siseUrl);
 
         const response = await axios.get(siseUrl);
 
@@ -81,18 +82,18 @@ const opinionLoad = async (stockCode) => {
 
             let sise = eval(response.data);
             if(sise.length <= 1 ){
-                console.log("헤더만 들어오는 경우 처리 하지 않습니다.");
+                logger.debug("헤더만 들어오는 경우 처리 하지 않습니다.");
                 return null;
             }
             //sis를 순회한다.
             /* forEach
             sise.forEach((v,i)=> {
-                console.log(i+'_'+v+'_'+v[0]);
+                logger.debug(i+'_'+v+'_'+v[0]);
             });*/
 
             /* for
             for(let i = 0 ; i < sise.length ; i++) {
-                console.log(sise[i]);
+                logger.debug(sise[i]);
             }*/
 
             //외국인 소진율이 ,만 있으면 배열에서 삭제 되어 Column count doesn't match value count at row 1 오류가 발생한다.
@@ -106,10 +107,10 @@ const opinionLoad = async (stockCode) => {
 
             //날짜 항목을 가진 행을 삭제
             let values = sise.filter((v, i) => {
-                //console.log(i+'_'+v+'_'+v[0]);
+                //logger.debug(i+'_'+v+'_'+v[0]);
                 return v[0] !== '날짜';
             });
-            //console.log("values"+values);
+            //logger.debug("values"+values);
 
             //날짜 항목 입력하기
             let todayDateTime = moment().format('YYYYMMDDHHmmss');
@@ -120,11 +121,11 @@ const opinionLoad = async (stockCode) => {
             let insertQuery = "INSERT INTO stock.stkpc_info (reg_dtm,regr_id,mod_dtm,modr_id,stock_code, delng_de, mktc, hghpc, lprc, clsrc, delng_qy,frgnr_exhs_rt) values ?;";
             const query_str = connection.query(insertQuery, [values], (err, result) => {
                 if (err) {
-                    console.log(err);
+                    logger.error(err);
                 }
             });
-            //console.log("query_str.sql:" + query_str.sql); // SQL Query문 출력
-            console.log("종목 :" + stockCode + " 시세조회 완료\n");
+            //logger.debug("query_str.sql:" + query_str.sql); // SQL Query문 출력
+            logger.debug("종목 :" + stockCode + " 시세조회 완료\n");
 
 
 
@@ -138,7 +139,7 @@ const opinionLoad = async (stockCode) => {
 };
 
 const runFunction = (resolve,stockCode,t) => {
-    console.log("sleep : "+(t/1000)+"초_stockCode : "+stockCode);
+    logger.debug("sleep : "+(t/1000)+"초_stockCode : "+stockCode);
     opinionLoad(stockCode); //종목코드를 보내준다.
     return resolve;
 }
@@ -149,7 +150,7 @@ function sleep(stockCode, t){
 }
 
 const crawlerSise  = () => {
-    console.log("crawlerSise start");
+    logger.info("crawlerSise start");
     /*DB에 입력 해 보자*/
     let connection = mysql.createConnection(conn); // DB 커넥션 생성
     connection.connect();   // DB 접속
@@ -176,9 +177,9 @@ const crawlerSise  = () => {
 
     connection.query(testQuery, function(err, results, field){
         if (err) {
-            console.log(err);
+            logger.error(err);
         }
-        console.log("종목시세 수집대상 갯수: " + results.length);
+        logger.debug("종목시세 수집대상 갯수: " + results.length);
 
         for(key in results) {
             ms = (idx+1)*intever;
@@ -195,4 +196,3 @@ const crawlerSise  = () => {
 
 };
 crawlerSise();
-console.log("end");

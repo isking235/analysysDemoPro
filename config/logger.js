@@ -11,8 +11,24 @@ if (!fs.existsSync(logDir)) {
 }
 
 // 현재 실행 중인 파일명을 기반으로 로그 파일 이름 생성
-function createLogger(currentFile) {
+function createLogger(currentFile, screenOut = true) {
   const baseName = path.basename(currentFile, '.js'); // 현재 파일명에서 확장자 제거
+
+  // 공통 파일 트랜스포트
+  const fileTransport = new winston.transports.DailyRotateFile({
+    filename: path.join(logDir, `${baseName}-%DATE%.log`),
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d'
+  });
+
+  // 트랜스포트 배열 구성
+  const transports = [fileTransport];
+  if (screenOut) {
+    transports.push(new winston.transports.Console());
+  }
+
 
   return winston.createLogger({
     level: process.env.LOG_LEVEL || 'info', // 로그 레벨 설정 (환경 변수 또는 기본값)
@@ -20,17 +36,7 @@ function createLogger(currentFile) {
       winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), // 타임스탬프 추가
       winston.format.printf(({ timestamp, level, message }) => `${timestamp} [${level}]: ${message}`) // 출력 포맷 설정
     ),
-    transports: [
-      // Daily Rotate File Transport 설정
-      new winston.transports.DailyRotateFile({
-        filename: path.join(logDir, `${baseName}-%DATE%.log`), // 날짜별 로그 파일 이름 생성
-        datePattern: 'YYYY-MM-DD', // 일별로 회전
-        zippedArchive: true, // 압축 저장
-        maxSize: '20m', // 최대 파일 크기 (20MB)
-        maxFiles: '14d', // 14일 이상된 파일 삭제
-      }),
-      new winston.transports.Console(), // 콘솔 출력 (선택 사항)
-    ],
+    transports: transports,
   });
 }
 
