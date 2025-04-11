@@ -1,6 +1,7 @@
 /*
 history
 2022-04-16 이상호 [CSR001]_종목별 최신을 읽어와 이후 종목 의견만 받아온다.
+2025-04-11 이상호 실행시 log파일에 저장 되도록한다.
  */
 
 /*
@@ -10,7 +11,10 @@ const axios = require('axios');
 const mysql = require('mysql');
 const moment = require("moment");  // mysql 모듈 로드
 const _ = require('lodash');
+const createLogger = require('../config/logger'); // config/logger.js에서 로거 가져
+
 require('dotenv').config();
+const logger = createLogger(__filename);
 
 
 const conn = {  // mysql 접속 설정
